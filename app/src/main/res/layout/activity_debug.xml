@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark"
+    android:orientation="vertical">
+
+    <!-- ═══════════════════ HEADER ═══════════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="41dp"
+        android:paddingEnd="41dp"
+        android:paddingTop="91dp"
+        android:paddingBottom="26dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.02"
+            android:text="@string/debug_title"
+            android:textColor="@color/on_surface"
+            android:textSize="54sp" />
+
+        <Button
+            android:id="@+id/btnClose"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="72dp"
+            android:minWidth="0dp"
+            android:background="@drawable/bg_debug_close_button"
+            android:backgroundTint="@null"
+            android:paddingStart="31dp"
+            android:paddingEnd="31dp"
+            android:text="关闭"
+            android:textColor="@color/on_surface_dim"
+            android:textSize="26sp" />
+    </LinearLayout>
+
+    <!-- 左右分栏 1:1：左侧配置，右侧运行日志与音频测试 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
+
+        <!-- ═════════════ 左侧：配置卡片（可滚动） ═════════════ -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:paddingStart="41dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="78dp">
+
+            <include
+                android:id="@+id/leftPanel"
+                layout="@layout/include_debug_left"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </androidx.core.widget.NestedScrollView>
+
+                <!-- ═════════════ 右侧：运行日志 + 音频测试（可滚动，小屏自适应） ═════════════ -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:paddingStart="20dp"
+            android:paddingEnd="41dp"
+            android:paddingBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+            <!-- CARD 4: 运行日志 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_debug_card"
+                android:padding="16dp"
+                android:minHeight="250dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="33dp"
+                        android:background="@drawable/bg_accent_bar" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:layout_weight="1"
+                        android:letterSpacing="0.03"
+                        android:text="运行日志"
+                        android:textColor="@color/on_surface"
+                        android:textSize="33sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnCopyLog"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="62dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="26dp"
+                        android:paddingEnd="26dp"
+                        android:text="复制日志"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="23sp" />
+
+                    <Button
+                        android:id="@+id/btnClearLog"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="62dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="26dp"
+                        android:paddingEnd="26dp"
+                        android:text="@string/debug_clear_log"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="23sp" />
+                </LinearLayout>
+
+                <ScrollView
+                    android:id="@+id/logScroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_debug_log"
+                    android:fadingEdgeLength="41dp"
+                    android:padding="16dp"
+                    android:requiresFadingEdge="vertical">
+
+                    <TextView
+                        android:id="@+id/textLog"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="monospace"
+                        android:lineSpacingMultiplier="1.4"
+                        android:textColor="@color/debug_log_text"
+                        android:textSize="22sp" />
+                </ScrollView>
+            </LinearLayout>
+
+            <!-- 音频测试 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_debug_card"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:minHeight="200dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginBottom="16dp">
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="33dp"
+                        android:background="@drawable/bg_accent_bar" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:letterSpacing="0.03"
+                        android:text="音频测试"
+                        android:textColor="@color/on_surface"
+                        android:textSize="33sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:cardCornerRadius="15dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <com.kooo.hey.audio.WaveformView
+                        android:id="@+id/waveformView"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnTestTone"
+                        style="@style/Widget.MaterialComponents.Button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="58dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="36dp"
+                        android:paddingEnd="36dp"
+                        android:backgroundTint="@color/red_primary"
+                        android:text="测试播放 (440Hz)"
+                        android:textSize="23sp"
+                        app:cornerRadius="29dp" />
+
+                    <Button
+                        android:id="@+id/btnTestMic"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="58dp"
+                        android:layout_marginStart="15dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="36dp"
+                        android:paddingEnd="36dp"
+                        android:text="测试喊话"
+                        android:textColor="@color/on_surface"
+                        android:textSize="23sp"
+                        app:cornerRadius="29dp" />
+
+                    <Button
+                        android:id="@+id/btnStopTest"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="58dp"
+                        android:layout_marginStart="15dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="36dp"
+                        android:paddingEnd="36dp"
+                        android:text="停止"
+                        android:textColor="@color/on_surface"
+                        android:textSize="23sp"
+                        app:cornerRadius="29dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+</LinearLayout>

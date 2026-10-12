@@ -1,0 +1,1535 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+        <!-- ═══════════════════ CARD 1: 快捷设置 ═══════════════════ -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="26dp"
+            android:background="@drawable/bg_debug_card"
+            android:orientation="vertical"
+            android:padding="36dp">
+
+            <!-- Section title -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="26dp">
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="33dp"
+                    android:background="@drawable/bg_accent_bar" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:letterSpacing="0.03"
+                    android:text="快捷设置"
+                    android:textColor="@color/on_surface"
+                    android:textSize="33sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Logcat trigger toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="88dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="日志触发喊话"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="监听系统日志关键词，匹配时自动触发喊话"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkLogcatTrigger"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- Logcat trigger keyword input (visible when enabled) -->
+            <LinearLayout
+                android:id="@+id/layoutLogcatParams"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="关键词"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/editLogcatKeyword"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:hint="输入日志关键词"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="@color/on_surface"
+                    android:textColorHint="@color/on_surface_dim"
+                    android:textSize="22sp" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@color/debug_divider" />
+
+            <!-- Floating window toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="88dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="悬浮喊话按钮"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="在桌面显示浮动快捷按钮"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkFloatingWindow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                android:background="@color/debug_divider" />
+
+            <!-- Auto talk when app is brought to foreground -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="88dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="前台唤醒自动喊话"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="点击应用图标唤醒到前台时自动开始60秒喊话"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkAutoTalkOnForeground"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@color/debug_divider" />
+
+            <!-- Launch action setting -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="启动默认功能"
+                    android:textColor="@color/on_surface"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="启动软件或通过悬浮窗/OK键/前台唤醒触发后默认打开的面板"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="22sp" />
+
+                <RadioGroup
+                    android:id="@+id/radioLaunchAction"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/radioLaunchTalk"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="喊话"
+                        android:textColor="@color/radio_text_color"
+                        android:textSize="23sp"
+                        android:background="@drawable/bg_radio_option" />
+
+
+                    <RadioButton
+                        android:id="@+id/radioLaunchMusic"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="音乐"
+                        android:textColor="@color/radio_text_color"
+                        android:textSize="23sp"
+                        android:background="@drawable/bg_radio_option" />
+                </RadioGroup>
+
+                <!-- Auto-play sub-settings (visible when TTS or Music selected) -->
+                <LinearLayout
+                    android:id="@+id/layoutLaunchAutoPlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="启动后自动播放指定条目"
+                            android:textColor="@color/on_surface"
+                            android:textSize="26sp" />
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/checkLaunchAutoPlay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:thumbTint="@color/switch_thumb_tint"
+                            app:trackTint="@color/switch_track_tint" />
+                    </LinearLayout>
+
+                    <!-- Item picker button (visible when auto-play is on) -->
+                    <Button
+                        android:id="@+id/btnPickLaunchItem"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="78dp"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical|start"
+                        android:paddingStart="26dp"
+                        android:paddingEnd="26dp"
+                        android:text="点击选择条目…"
+                        android:textColor="@color/on_surface"
+                        android:textSize="25sp"
+                        android:textAllCaps="false"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:visibility="gone"
+                        app:cornerRadius="10dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Floating window sub-settings: size slider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="大小"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <SeekBar
+                    android:id="@+id/seekFloatingSize"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:max="88"
+                    android:progressTint="@color/red_primary"
+                    android:thumbTint="@color/red_primary" />
+
+                <TextView
+                    android:id="@+id/textFloatingSize"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="67dp"
+                    android:gravity="end"
+                    android:text="72dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="22sp" />
+            </LinearLayout>
+
+            <!-- Floating window sub-settings: alpha slider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="透明度"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <SeekBar
+                    android:id="@+id/seekFloatingAlpha"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:max="9"
+                    android:progressTint="@color/red_primary"
+                    android:thumbTint="@color/red_primary" />
+
+                <TextView
+                    android:id="@+id/textFloatingAlpha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="67dp"
+                    android:gravity="end"
+                    android:text="0.7"
+                    android:textColor="@color/on_surface"
+                    android:textSize="22sp" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@color/debug_divider" />
+
+            <!-- Music folder path -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/music_folder_label"
+                    android:textColor="@color/on_surface"
+                    android:textSize="28sp" />
+
+                <EditText
+                    android:id="@+id/editMusicFolder"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:hint="/storage/emulated/0/Download/music"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="@color/on_surface"
+                    android:textColorHint="@color/on_surface_dim"
+                    android:textSize="22sp" />
+
+                <ImageView
+                    android:id="@+id/btnBrowseMusicFolder"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_folder"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/music_folder_browse"
+                    app:tint="@color/on_surface_muted" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ═══════════════════ CARD 2: 音频配置 ═══════════════════ -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="26dp"
+            android:background="@drawable/bg_debug_card"
+            android:orientation="vertical"
+            android:padding="36dp">
+
+            <!-- Section title + 枚举设备 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="26dp">
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="33dp"
+                    android:background="@drawable/bg_accent_bar" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="15dp"
+                    android:letterSpacing="0.03"
+                    android:text="音频配置"
+                    android:textColor="@color/on_surface"
+                    android:textSize="33sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnEnumMics"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="62dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:text="枚举设备"
+                    android:textColor="@color/on_surface"
+                    android:textSize="23sp"
+                    app:cornerRadius="31dp" />
+            </LinearLayout>
+
+            <!-- Audio Usage -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="169dp"
+                    android:layout_height="wrap_content"
+                    android:text="输出设备"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="26sp" />
+
+                <EditText
+                    android:id="@+id/editAudioUsage"
+                    android:layout_width="143dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:hint="73"
+                    android:inputType="number"
+                    android:maxLength="3"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp" />
+            </LinearLayout>
+
+            <!-- Audio Source -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="169dp"
+                    android:layout_height="wrap_content"
+                    android:text="麦克风源"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="26sp" />
+
+                <EditText
+                    android:id="@+id/editAudioSource"
+                    android:layout_width="143dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:hint="7"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp" />
+            </LinearLayout>
+
+            <!-- Input Device ID -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="169dp"
+                    android:layout_height="wrap_content"
+                    android:text="输入设备ID"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="26sp" />
+
+                <EditText
+                    android:id="@+id/editInputDeviceId"
+                    android:layout_width="143dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:text="0=自动（该选项会覆盖麦克风源设置，使用指定麦克风收音）"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <!-- Output Device ID -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="169dp"
+                    android:layout_height="wrap_content"
+                    android:text="输出设备ID"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="26sp" />
+
+                <EditText
+                    android:id="@+id/editOutputDeviceId"
+                    android:layout_width="143dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:hint="0"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:text="0=自动（填写设备ID可直接指定输出到某个bus）"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <!-- USAGE 遍历（输出设备ID下方） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnUsageSweep"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="72dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="36dp"
+                    android:paddingEnd="36dp"
+                    android:text="Usage 遍历测试"
+                    android:textColor="@color/on_surface"
+                    android:textSize="23sp"
+                    app:cornerRadius="36dp" />
+
+                <Button
+                    android:id="@+id/btnStopSweep"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="72dp"
+                    android:layout_marginStart="15dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="36dp"
+                    android:paddingEnd="36dp"
+                    android:text="停止遍历"
+                    android:textColor="@color/on_surface"
+                    android:textSize="23sp"
+                    app:cornerRadius="36dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:text="逐个测试 usage 1~100，看哪个能出声"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <!-- 音量组设置 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="15dp"
+                android:background="@color/debug_divider" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="音量组设置"
+                android:textColor="@color/on_surface"
+                android:textSize="28sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:text="查询和调节车载硬件音量组"
+                android:textColor="@color/on_surface_dim"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="音量组ID"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/editVolumeGroupId"
+                    android:layout_width="100dp"
+                    android:layout_height="62dp"
+                    android:layout_marginStart="15dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:inputType="number"
+                    android:maxLength="2"
+                    android:textColor="@color/on_surface"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:text="留空=按usage自动查，填数字=直接指定"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnVolumeAutoMatch"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="62dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:text="自动匹配"
+                    android:textColor="@color/on_surface"
+                    android:textSize="20sp"
+                    app:cornerRadius="31dp" />
+
+                <Button
+                    android:id="@+id/btnVolumeDump"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="62dp"
+                    android:layout_marginStart="10dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:text="查询音量组"
+                    android:textColor="@color/on_surface"
+                    android:textSize="20sp"
+                    app:cornerRadius="31dp" />
+
+                <Button
+                    android:id="@+id/btnVolumeSet"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="62dp"
+                    android:layout_marginStart="10dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:text="设置音量"
+                    android:textColor="@color/on_surface"
+                    android:textSize="20sp"
+                    app:cornerRadius="31dp" />
+
+                <TextView
+                    android:id="@+id/textVolumeValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:minWidth="67dp"
+                    android:gravity="end"
+                    android:text="30"
+                    android:textColor="@color/on_surface"
+                    android:textSize="24sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="音量"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <SeekBar
+                    android:id="@+id/seekVolume"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_weight="1"
+                    android:max="39"
+                    android:progress="30"
+                    android:progressTint="@color/red_primary"
+                    android:thumbTint="@color/red_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="~"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="39"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <!-- 车外功放扬声器控制 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="26dp"
+                android:background="@color/debug_divider" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="车外功放扬声器控制"
+                android:textColor="@color/on_surface"
+                android:textSize="28sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="20dp"
+                android:text="车外功放开关，部分车型需单独配置，如果功能正常无需调整"
+                android:textColor="@color/on_surface_dim"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Transaction Code"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <EditText
+                    android:id="@+id/editAmpTxnCode"
+                    android:layout_width="143dp"
+                    android:layout_height="72dp"
+                    android:layout_marginStart="15dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:hint="55"
+                    android:inputType="number"
+                    android:maxLength="3"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:text="仅 usage=72 时需要"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnAmpOn"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="62dp"
+                    android:layout_marginEnd="16dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:text="扬声器开启"
+                    android:textColor="@color/on_surface"
+                    android:textSize="20sp"
+                    app:cornerRadius="31dp" />
+
+                <Button
+                    android:id="@+id/btnAmpOff"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="62dp"
+                    android:layout_marginEnd="16dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:text="扬声器关闭"
+                    android:textColor="@color/on_surface"
+                    android:textSize="20sp"
+                    app:cornerRadius="31dp" />
+
+                <Button
+                    android:id="@+id/btnAmpStatus"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="62dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:text="状态查询"
+                    android:textColor="@color/on_surface"
+                    android:textSize="20sp"
+                    app:cornerRadius="31dp" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="26dp"
+                android:layout_marginBottom="26dp"
+                android:background="@color/debug_divider" />
+
+            <!-- Reverb 混响 (radio buttons) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="混响效果"
+                    android:textColor="@color/on_surface"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="添加空间声效，增强临场感"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="22sp" />
+
+                <RadioGroup
+                    android:id="@+id/radioReverbMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/radioReverbOff"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="无"
+                        android:textColor="@color/radio_text_color"
+                        android:textSize="23sp"
+                        android:background="@drawable/bg_radio_option" />
+
+                    <RadioButton
+                        android:id="@+id/radioReverbMedium"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="适中"
+                        android:textColor="@color/radio_text_color"
+                        android:textSize="23sp"
+                        android:background="@drawable/bg_radio_option" />
+
+                    <RadioButton
+                        android:id="@+id/radioReverbStrong"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="强"
+                        android:textColor="@color/radio_text_color"
+                        android:textSize="23sp"
+                        android:background="@drawable/bg_radio_option" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                android:background="@color/debug_divider" />
+
+            <!-- Gain Range: Min -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="169dp"
+                    android:layout_height="wrap_content"
+                    android:text="最低增益"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="26sp" />
+
+                <EditText
+                    android:id="@+id/editMinGainLimit"
+                    android:layout_width="143dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:hint="0.1"
+                    android:inputType="numberDecimal"
+                    android:maxLength="3"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="13dp"
+                    android:text="≥0.1，不超过最高增益"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <!-- Gain Range: Max -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="169dp"
+                    android:layout_height="wrap_content"
+                    android:text="最高增益"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="26sp" />
+
+                <EditText
+                    android:id="@+id/editMaxGainLimit"
+                    android:layout_width="143dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/bg_debug_input"
+                    android:gravity="center"
+                    android:hint="30"
+                    android:inputType="number"
+                    android:maxLength="3"
+                    android:paddingStart="23dp"
+                    android:paddingEnd="23dp"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="13dp"
+                    android:text="≥3~100，且≥最低增益"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ═══════════════════ CARD 2.5: 降噪配置 ═══════════════════ -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="26dp"
+            android:background="@drawable/bg_debug_card"
+            android:orientation="vertical"
+            android:padding="36dp">
+
+            <!-- Section title -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="26dp">
+
+                <View
+                    android:layout_width="5dp"
+                    android:layout_height="36dp"
+                    android:background="@color/red_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:letterSpacing="0.03"
+                    android:text="降噪配置（高增益情况下效果有限，回声过大还请降低增益）"
+                    android:textColor="@color/on_surface"
+                    android:textSize="33sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- 带通滤波（放在最前，用户认为最有用） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="带通滤波"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="只保留人声频段，切除低频噪声和高频啸叫（实时生效）"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkBandpass"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- Bandpass range slider (visible when enabled) -->
+            <LinearLayout
+                android:id="@+id/layoutBandpass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="频率范围"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/textBandpassRange"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="300Hz ~ 4000Hz"
+                        android:textColor="@color/on_surface"
+                        android:textSize="24sp" />
+                </LinearLayout>
+
+                <com.google.android.material.slider.RangeSlider
+                    android:id="@+id/sliderBandpass"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:valueFrom="100"
+                    android:valueTo="8000"
+                    android:stepSize="100"
+                    app:labelBehavior="gone"
+                    app:trackColorActive="@color/red_primary"
+                    app:thumbColor="@color/red_primary" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="100Hz"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="8000Hz"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="18sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 噪声门（带通之后，实时生效） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="噪声门"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="动态阈值抑制低电平噪声，强度可调（实时生效）"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkNoiseGate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- 噪声门强度 0~100%（仅打开噪声门时显示，配色同带通） -->
+            <LinearLayout
+                android:id="@+id/layoutNoiseGateStrength"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="强度"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <SeekBar
+                    android:id="@+id/seekNoiseGateStrength"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="16dp"
+                    android:max="100"
+                    android:progress="50"
+                    android:progressTint="@color/red_primary"
+                    android:thumbTint="@color/red_primary" />
+
+                <TextView
+                    android:id="@+id/textNoiseGateStrength"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:minWidth="48dp"
+                    android:text="50%"
+                    android:textColor="@color/on_surface"
+                    android:textSize="24sp" />
+            </LinearLayout>
+
+            <!-- Frequency Shift anti-howling toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="频率偏移防啸叫"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="每次循环偏移几Hz，破坏反馈叠加，消除啸叫（实时生效）"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkFreqShift"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- Frequency shift amount slider -->
+            <LinearLayout
+                android:id="@+id/layoutFreqShift"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="偏移量"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="24sp" />
+
+                <SeekBar
+                    android:id="@+id/seekFreqShift"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_weight="1"
+                    android:max="18"
+                    android:progress="8"
+                    android:progressTint="@color/red_primary"
+                    android:thumbTint="@color/red_primary" />
+
+                <TextView
+                    android:id="@+id/textFreqShift"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5.0Hz"
+                    android:textColor="@color/on_surface"
+                    android:textSize="24sp"
+                    android:minWidth="100dp"
+                    android:gravity="end" />
+            </LinearLayout>
+
+            <!-- AGC toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:gravity="center_vertical"
+                android:minHeight="78dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="AGC 防啸叫"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="自动增益控制，防止声音反馈"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkAgc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- DSP 降噪模式 (放在 AGC 防啸叫后面) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DSP降噪"
+                    android:textColor="@color/on_surface"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Ecarx 硬件 DSP，同时只能选一种模式，系统默认值是“唤醒优化”，如出现问题可调回默认值"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="22sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnAdbSetBypass"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:text="关闭"
+                        android:textColor="@color/on_surface"
+                        android:textSize="20sp"
+                        app:cornerRadius="31dp" />
+
+                    <Button
+                        android:id="@+id/btnAdbSetNoise"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="噪音抑制"
+                        android:textColor="@color/on_surface"
+                        android:textSize="18sp"
+                        app:cornerRadius="31dp" />
+
+                    <Button
+                        android:id="@+id/btnAdbSetEcho"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="回声消除"
+                        android:textColor="@color/on_surface"
+                        android:textSize="18sp"
+                        app:cornerRadius="31dp" />
+
+                    <Button
+                        android:id="@+id/btnAdbSetWakeup"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="唤醒优化"
+                        android:textColor="@color/on_surface"
+                        android:textSize="18sp"
+                        app:cornerRadius="31dp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnAdbGetWorkmode"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="查询当前值"
+                    android:textColor="@color/red_primary"
+                    android:textSize="22sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+</LinearLayout>

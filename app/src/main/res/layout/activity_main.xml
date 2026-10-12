@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:background="@color/background_dark">
+
+    <!-- Audio-reactive ripple (concentric rings, centered on button) -->
+    <com.kooo.hey.ui.AudioGlowView
+        android:id="@+id/audioGlow"
+        android:layout_width="@dimen/audio_glow_size"
+        android:layout_height="@dimen/audio_glow_size"
+        app:layout_constraintBottom_toBottomOf="@id/countdownRing"
+        app:layout_constraintEnd_toEndOf="@id/countdownRing"
+        app:layout_constraintStart_toStartOf="@id/countdownRing"
+        app:layout_constraintTop_toTopOf="@id/countdownRing" />
+
+    <!-- Countdown ring (behind button, same center) -->
+    <com.kooo.hey.ui.CountdownRingView
+        android:id="@+id/countdownRing"
+        android:layout_width="@dimen/countdown_ring_size"
+        android:layout_height="@dimen/countdown_ring_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.45" />
+
+    <!-- Main talk button (centered inside the ring) -->
+    <FrameLayout
+        android:id="@+id/talkButton"
+        android:layout_width="@dimen/talk_button_size"
+        android:layout_height="@dimen/talk_button_size"
+        android:background="@drawable/bg_talk_idle"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@id/countdownRing"
+        app:layout_constraintEnd_toEndOf="@id/countdownRing"
+        app:layout_constraintStart_toStartOf="@id/countdownRing"
+        app:layout_constraintTop_toTopOf="@id/countdownRing">
+
+        <ImageView
+            android:id="@+id/micIcon"
+            android:layout_width="@dimen/mic_icon_size"
+            android:layout_height="@dimen/mic_icon_size"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_mic"
+            android:tint="@color/mic_icon_idle"
+            android:contentDescription="Microphone" />
+
+    </FrameLayout>
+
+    <!-- Status text -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/status_text_margin_top"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.05"
+        android:text="@string/status_idle"
+        android:textColor="@color/on_surface_dim"
+        android:textSize="@dimen/status_text_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/countdownRing" />
+
+    <!-- Error hint -->
+    <TextView
+        android:id="@+id/errorText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/error_text_margin_top"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/red_primary"
+        android:textSize="@dimen/error_text_size"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/statusText" />
+
+    <!-- Function buttons row: Quick 1 / Quick 2 / Quick 3 / Quick 4 / Music -->
+    <LinearLayout
+        android:id="@+id/functionButtonsRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/func_row_margin_top"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/errorText">
+
+        <!-- Quick button 1 -->
+        <LinearLayout
+            android:id="@+id/quick1Layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginEnd="@dimen/func_button_spacing">
+
+            <ImageView
+                android:id="@+id/quickButton1"
+                android:layout_width="@dimen/func_button_size"
+                android:layout_height="@dimen/func_button_size"
+                android:background="@drawable/bg_func_button_ripple"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/func_button_padding"
+                android:src="@drawable/ic_add"
+                android:tint="@color/ve_icon_tint"
+                android:contentDescription="@string/quick_sound_default_1" />
+
+            <TextView
+                android:id="@+id/quickButton1Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/func_label_margin_top"
+                android:maxWidth="@dimen/quick_button_label_max_width"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:text="@string/quick_sound_default_1"
+                android:textColor="@color/on_surface_muted"
+                android:textSize="@dimen/func_label_text_size" />
+        </LinearLayout>
+
+        <!-- Quick button 2 -->
+        <LinearLayout
+            android:id="@+id/quick2Layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginEnd="@dimen/func_button_spacing">
+
+            <ImageView
+                android:id="@+id/quickButton2"
+                android:layout_width="@dimen/func_button_size"
+                android:layout_height="@dimen/func_button_size"
+                android:background="@drawable/bg_func_button_ripple"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/func_button_padding"
+                android:src="@drawable/ic_add"
+                android:tint="@color/ve_icon_tint"
+                android:contentDescription="@string/quick_sound_default_2" />
+
+            <TextView
+                android:id="@+id/quickButton2Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/func_label_margin_top"
+                android:maxWidth="@dimen/quick_button_label_max_width"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:text="@string/quick_sound_default_2"
+                android:textColor="@color/on_surface_muted"
+                android:textSize="@dimen/func_label_text_size" />
+        </LinearLayout>
+
+        <!-- Quick button 3 -->
+        <LinearLayout
+            android:id="@+id/quick3Layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginEnd="@dimen/func_button_spacing">
+
+            <ImageView
+                android:id="@+id/quickButton3"
+                android:layout_width="@dimen/func_button_size"
+                android:layout_height="@dimen/func_button_size"
+                android:background="@drawable/bg_func_button_ripple"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/func_button_padding"
+                android:src="@drawable/ic_add"
+                android:tint="@color/ve_icon_tint"
+                android:contentDescription="@string/quick_sound_default_3" />
+
+            <TextView
+                android:id="@+id/quickButton3Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/func_label_margin_top"
+                android:maxWidth="@dimen/quick_button_label_max_width"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:text="@string/quick_sound_default_3"
+                android:textColor="@color/on_surface_muted"
+                android:textSize="@dimen/func_label_text_size" />
+        </LinearLayout>
+
+        <!-- Quick button 4 -->
+        <LinearLayout
+            android:id="@+id/quick4Layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginEnd="@dimen/func_button_spacing">
+
+            <ImageView
+                android:id="@+id/quickButton4"
+                android:layout_width="@dimen/func_button_size"
+                android:layout_height="@dimen/func_button_size"
+                android:background="@drawable/bg_func_button_ripple"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/func_button_padding"
+                android:src="@drawable/ic_add"
+                android:tint="@color/ve_icon_tint"
+                android:contentDescription="@string/quick_sound_default_4" />
+
+            <TextView
+                android:id="@+id/quickButton4Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/func_label_margin_top"
+                android:maxWidth="@dimen/quick_button_label_max_width"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:text="@string/quick_sound_default_4"
+                android:textColor="@color/on_surface_muted"
+                android:textSize="@dimen/func_label_text_size" />
+        </LinearLayout>
+
+        <!-- Music player toggle button -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/musicButton"
+                android:layout_width="@dimen/func_button_size"
+                android:layout_height="@dimen/func_button_size"
+                android:background="@drawable/bg_func_button_ripple"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/func_button_padding"
+                android:src="@drawable/ic_music"
+                android:tint="@color/ve_icon_tint"
+                android:contentDescription="@string/music_title" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/func_label_margin_top"
+                android:text="@string/music_title"
+                android:textColor="@color/on_surface_muted"
+                android:textSize="@dimen/func_label_text_size" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Music player panel (replaces center circle when active) -->
+    <include
+        android:id="@+id/musicPanel"
+        layout="@layout/panel_music_player"
+        android:layout_width="@dimen/panel_width"
+        android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/panel_margin_bottom"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/audioGlow" />
+
+    <!-- Barrier at left edge of whichever panel is visible -->
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/panelStartBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="start"
+        app:constraint_referenced_ids="musicPanel" />
+
+    <!-- Back button (left of panels, vertically centered, shown when panel is open) -->
+    <LinearLayout
+        android:id="@+id/panelBackButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginEnd="@dimen/back_button_margin_end"
+        android:visibility="gone"
+        android:layout_marginBottom="@dimen/panel_margin_bottom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/panelStartBarrier"
+        app:layout_constraintTop_toTopOf="@id/audioGlow">
+
+        <ImageView
+            android:layout_width="@dimen/func_button_size"
+            android:layout_height="@dimen/func_button_size"
+            android:background="@drawable/bg_func_button_ripple"
+            android:padding="@dimen/back_button_padding"
+            android:src="@drawable/ic_arrow_back"
+            android:tint="@color/ve_icon_tint"
+            android:contentDescription="返回" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/func_label_margin_top"
+            android:text="返回"
+            android:textColor="@color/on_surface_muted"
+            android:textSize="@dimen/func_label_text_size" />
+    </LinearLayout>
+
+    <!-- Gain slider (left side, vertical) -->
+    <com.kooo.hey.ui.GainSliderView
+        android:id="@+id/gainSlider"
+        android:layout_width="@dimen/gain_slider_width"
+        android:layout_height="@dimen/gain_slider_height"
+        android:layout_marginStart="@dimen/gain_slider_margin_start"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.45" />
+
+    <!-- Settings gear button (bottom left, single tap to open) -->
+    <ImageView
+        android:id="@+id/settingsButton"
+        android:layout_width="@dimen/corner_button_size"
+        android:layout_height="@dimen/corner_button_size"
+        android:layout_marginStart="@dimen/corner_button_margin"
+        android:layout_marginBottom="@dimen/corner_button_margin"
+        android:alpha="0.35"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:padding="@dimen/corner_button_padding"
+        android:src="@drawable/ic_settings"
+        android:tint="@color/on_surface"
+        android:contentDescription="Settings"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Guide info button (bottom right) -->
+    <TextView
+        android:id="@+id/guideButton"
+        android:layout_width="@dimen/corner_button_size"
+        android:layout_height="@dimen/corner_button_size"
+        android:layout_marginEnd="@dimen/corner_button_margin"
+        android:layout_marginBottom="@dimen/corner_button_margin"
+        android:alpha="0.35"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:gravity="center"
+        android:text="!"
+        android:textColor="@color/on_surface"
+        android:textSize="@dimen/guide_text_size"
+        android:textStyle="bold"
+        android:fontFamily="serif"
+        android:contentDescription="使用指南"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

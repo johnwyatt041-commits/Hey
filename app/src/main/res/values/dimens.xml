@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Unified compact layout for default-size screens. -->
+    <dimen name="audio_glow_size">294dp</dimen>
+    <dimen name="countdown_ring_size">157dp</dimen>
+    <dimen name="talk_button_size">137dp</dimen>
+    <dimen name="mic_icon_size">48dp</dimen>
+
+    <dimen name="status_text_size">11sp</dimen>
+    <dimen name="status_text_margin_top">11dp</dimen>
+    <dimen name="error_text_size">9sp</dimen>
+    <dimen name="error_text_margin_top">3dp</dimen>
+
+    <dimen name="func_row_margin_top">20dp</dimen>
+    <dimen name="func_button_size">39dp</dimen>
+    <dimen name="func_button_padding">8dp</dimen>
+    <dimen name="func_button_spacing">14dp</dimen>
+    <dimen name="func_label_text_size">9sp</dimen>
+    <dimen name="func_label_margin_top">2dp</dimen>
+    <dimen name="quick_button_label_max_width">50dp</dimen>
+
+    <dimen name="gain_slider_width">39dp</dimen>
+    <dimen name="gain_slider_height">196dp</dimen>
+    <dimen name="gain_slider_margin_start">14dp</dimen>
+
+    <dimen name="corner_button_size">28dp</dimen>
+    <dimen name="corner_button_margin">11dp</dimen>
+    <dimen name="corner_button_padding">6dp</dimen>
+    <dimen name="guide_text_size">14sp</dimen>
+
+    <dimen name="ve_panel_width">336dp</dimen>
+    <dimen name="panel_width">280dp</dimen>
+    <dimen name="panel_margin_bottom">28dp</dimen>
+    <dimen name="panel_content_padding">14dp</dimen>
+    <dimen name="panel_title_text_size">15sp</dimen>
+    <dimen name="ve_panel_margin_bottom">8dp</dimen>
+
+    <dimen name="back_button_padding">10dp</dimen>
+    <dimen name="back_button_margin_end">17dp</dimen>
+
+    <dimen name="ve_item_icon_size">28dp</dimen>
+    <dimen name="ve_item_icon_padding">4dp</dimen>
+    <dimen name="ve_item_padding">3dp</dimen>
+    <dimen name="ve_label_text_size">8sp</dimen>
+    <dimen name="ve_label_margin_top">2dp</dimen>
+    <dimen name="ve_panel_padding_h">7dp</dimen>
+    <dimen name="ve_panel_padding_v">7dp</dimen>
+
+    <dimen name="tts_input_height">34dp</dimen>
+    <dimen name="tts_input_text_size">11sp</dimen>
+    <dimen name="tts_input_padding_h">8dp</dimen>
+    <dimen name="tts_input_margin_end">6dp</dimen>
+    <dimen name="tts_button_size">34dp</dimen>
+    <dimen name="tts_record_margin_end">6dp</dimen>
+    <dimen name="tts_record_padding">7dp</dimen>
+    <dimen name="tts_add_padding">6dp</dimen>
+    <dimen name="tts_scroll_margin">8dp</dimen>
+
+    <dimen name="music_info_text_size">11sp</dimen>
+    <dimen name="music_info_margin_top">6dp</dimen>
+    <dimen name="music_seekbar_margin_top">3dp</dimen>
+    <dimen name="music_time_text_size">10sp</dimen>
+    <dimen name="music_transport_margin_top">6dp</dimen>
+    <dimen name="music_transport_button_size">34dp</dimen>
+    <dimen name="music_transport_padding">7dp</dimen>
+    <dimen name="music_play_button_size">39dp</dimen>
+    <dimen name="music_play_button_margin">17dp</dimen>
+    <dimen name="music_play_button_padding">8dp</dimen>
+    <dimen name="music_mode_button_size">28dp</dimen>
+    <dimen name="music_mode_padding">7dp</dimen>
+    <dimen name="music_playlist_margin_top">10dp</dimen>
+
+    <dimen name="tts_item_text_size">11sp</dimen>
+    <dimen name="tts_item_margin_bottom">4dp</dimen>
+    <dimen name="tts_item_padding_start">8dp</dimen>
+    <dimen name="tts_item_padding_end">6dp</dimen>
+    <dimen name="tts_item_padding_v">7dp</dimen>
+    <dimen name="tts_item_delete_size">22dp</dimen>
+    <dimen name="tts_item_delete_margin">4dp</dimen>
+
+    <dimen name="dialog_width">224dp</dimen>
+    <dimen name="dialog_folder_width">280dp</dimen>
+    <dimen name="dialog_title_size">13sp</dimen>
+    <dimen name="dialog_input_size">11sp</dimen>
+    <dimen name="dialog_button_size">11sp</dimen>
+    <dimen name="dialog_body_size">11sp</dimen>
+
+    <dimen name="music_item_text_size">11sp</dimen>
+    <dimen name="music_item_index_text_size">10sp</dimen>
+    <dimen name="music_item_margin_bottom">4dp</dimen>
+    <dimen name="music_item_padding_h">8dp</dimen>
+    <dimen name="music_item_padding_v">6dp</dimen>
+    <dimen name="music_item_index_width">20dp</dimen>
+
+</resources>

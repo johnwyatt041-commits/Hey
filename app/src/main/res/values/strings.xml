@@ -1,0 +1,80 @@
+<resources>
+    <string name="app_name">Hey！</string>
+
+    <!-- Main screen -->
+    <string name="status_idle">点按开始喊话 · 长按持续</string>
+    <string name="status_charging">松开开始 · 继续按住可持续喊话</string>
+    <string name="status_charged">松开进入持续喊话模式</string>
+    <string name="status_connecting">正在连接…</string>
+    <string name="status_countdown">喊话中 · %1$d秒 · 点按结束</string>
+    <string name="status_continuous">持续喊话中 · 点按结束</string>
+    <string name="status_active">正在喊话中 · 再次点按结束</string>
+    <string name="status_stopping">正在停止…</string>
+    <string name="status_error">出错了，点按重试</string>
+
+    <!-- Permissions -->
+    <string name="permission_mic_title">需要麦克风权限</string>
+    <string name="permission_mic_message">喊话功能需要使用麦克风录制声音</string>
+
+
+
+    <!-- Quick sound buttons -->
+    <string name="quick_sound_title">快捷音乐</string>
+    <string name="quick_sound_default_1">快捷 1</string>
+    <string name="quick_sound_default_2">快捷 2</string>
+    <string name="quick_sound_default_3">快捷 3</string>
+    <string name="quick_sound_default_4">快捷 4</string>
+    <string name="quick_sound_dialog_title">设置快捷按键</string>
+    <string name="quick_sound_name_label">按键名称</string>
+    <string name="quick_sound_name_hint">输入按键名称…</string>
+    <string name="quick_sound_file_label">音频文件</string>
+    <string name="quick_sound_no_file">未绑定音频文件</string>
+    <string name="quick_sound_select_file">选择文件</string>
+    <string name="quick_sound_choose_track">选择音频文件</string>
+    <string name="quick_sound_browse_folder">浏览其他文件夹…</string>
+    <string name="quick_sound_clear">清除设置</string>
+    <string name="quick_sound_save">保存</string>
+    <string name="quick_sound_file_not_found">音频文件不存在，请重新选择</string>
+    <string name="quick_sound_set_success">已将「%1$s」设为%2$s</string>
+    <string name="quick_sound_set_as">设为快捷播放</string>
+    <string name="quick_sound_key_label">物理/蓝牙按键</string>
+    <string name="quick_sound_key_unbound">未绑定按键</string>
+    <string name="quick_sound_btn_bind">录制按键</string>
+    <string name="quick_sound_btn_unbind">解绑</string>
+    <string name="quick_sound_learn_title">录制蓝牙/物理按键</string>
+    <string name="quick_sound_learn_hint">请按下遥控器或方向盘上的按键…</string>
+    <string name="quick_sound_detected_key">已识别按键: %1$s</string>
+    <string name="quick_sound_gesture_label">触发动作:</string>
+    <string name="quick_sound_gesture_single">单击</string>
+    <string name="quick_sound_gesture_double">双击</string>
+    <string name="quick_sound_gesture_long">长按</string>
+    <string name="quick_sound_confirm">确定</string>
+
+    <!-- Music player -->
+    <string name="music_title">音乐</string>
+    <string name="music_no_track">未选择曲目</string>
+    <string name="music_empty_folder">未找到音频文件</string>
+    <string name="music_folder_label">音乐文件夹</string>
+    <string name="music_folder_browse">选择文件夹</string>
+    <string name="music_folder_select">选择此目录</string>
+    <string name="music_folder_empty">此目录为空</string>
+    <string name="music_folder_no_access">无法访问该目录</string>
+    <string name="music_decode_fallback">正在使用软件解码器</string>
+
+    <!-- Permissions: storage -->
+    <string name="permission_storage_title">需要文件读取权限</string>
+    <string name="permission_storage_message">音乐功能需要读取本地音频文件，请授予文件读取权限</string>
+    <string name="permission_storage_denied">未授予文件读取权限，无法加载音乐</string>
+    <string name="permission_storage_settings">请在系统设置中手动授予文件读取权限</string>
+    <string name="permission_dialog_ok">去授权</string>
+    <string name="permission_dialog_cancel">取消</string>
+    <string name="permission_dialog_settings">去设置</string>
+
+    <!-- Debug panel -->
+    <string name="debug_title">调试面板</string>
+    <string name="debug_audio_section">音频输出</string>
+    <string name="debug_log_section">运行日志</string>
+    <string name="debug_output_device">输出设备</string>
+    <string name="debug_clear_log">清除日志</string>
+    <string name="debug_save">保存配置</string>
+</resources>

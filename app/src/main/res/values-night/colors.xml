@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============ Night (Dark) Mode ============ -->
+
+    <!-- Base palette -->
+    <color name="background_dark">#FF20272E</color>
+    <color name="surface_dark">#FF2A3240</color>
+    <color name="surface_elevated">#FF353D4A</color>
+    <color name="on_surface">#FFFFFFFF</color>
+    <color name="on_surface_dim">#FF8899AA</color>
+    <color name="on_surface_muted">#FF556677</color>
+    <color name="on_primary">#FFFFFFFF</color>
+
+    <!-- Accent -->
+    <color name="red_primary">#FFFF3B30</color>
+    <color name="red_dark">#FFCC0000</color>
+    <color name="red_glow">#40FF3B30</color>
+    <color name="green_ok">#FF00E676</color>
+    <color name="yellow_warn">#FFFFEA00</color>
+
+    <!-- Talk button states -->
+    <color name="btn_idle_fill">#FF2A3240</color>
+    <color name="btn_idle_stroke">#FF445566</color>
+    <color name="btn_active_fill">#FFFF3B30</color>
+    <color name="btn_active_stroke">#FFFF6B5E</color>
+    <color name="btn_continuous_fill">#FF00E676</color>
+    <color name="btn_continuous_stroke">#FF69F0AE</color>
+    <color name="mic_icon_idle">#FFB0BCC8</color>
+    <color name="mic_icon_active">#FFFFFFFF</color>
+
+    <!-- Idle breathing stroke range -->
+    <color name="breath_stroke_min">#FF445566</color>
+    <color name="breath_stroke_max">#FF667788</color>
+
+    <!-- Pulse ring overlays -->
+    <color name="pulse_red">#40FF3B30</color>
+    <color name="pulse_green">#404CAF50</color>
+    <color name="pulse_yellow">#40FFAB00</color>
+
+    <!-- Countdown ring colors -->
+    <color name="ring_charging">#99FF3B30</color>
+    <color name="ring_continuous">#FF00E676</color>
+    <color name="ring_track">#20FFFFFF</color>
+
+    <!-- Waveform colors -->
+    <color name="waveform_input">#FF4CAF50</color>
+    <color name="waveform_output">#FFFF3B30</color>
+    <color name="waveform_label">#FF8899AA</color>
+    <color name="waveform_grid">#FF3A4250</color>
+    <color name="waveform_bg">#FF2A3240</color>
+    <!-- Optimized: Dark Red to Bright Red Gradient -->
+    <color name="waveform_level_low">#FFB71C1C</color> <!-- Red 900 -->
+    <color name="waveform_level_mid">#FFFF3B30</color> <!-- Red Primary -->
+    <color name="waveform_level_high">#FFFF8A80</color> <!-- Red A100 -->
+
+    <!-- Floating window -->
+    <color name="floating_idle_fill">#DD1A2030</color>
+    <color name="floating_idle_stroke">#60445566</color>
+    <color name="floating_idle_icon">#BBFFFFFF</color>
+    <color name="floating_active_fill">#DDCC2222</color>
+    <color name="floating_active_stroke">#80FF4444</color>
+    <color name="floating_active_icon">#FFFFFFFF</color>
+
+    <!-- Debug dot -->
+    <color name="debug_dot">#20FFFFFF</color>
+
+    <!-- Debug panel -->
+    <color name="debug_card_surface">#FF2E3644</color>
+    <color name="debug_card_stroke">#12FFFFFF</color>
+    <color name="debug_input_surface">#FF242C38</color>
+    <color name="debug_input_stroke">#10FFFFFF</color>
+    <color name="debug_divider">#10FFFFFF</color>
+    <color name="debug_log_surface">#FF161E28</color>
+    <color name="debug_log_text">#FF88AACC</color>
+
+    <!-- Voice effect panel -->
+    <color name="ve_panel_bg">#FF2A3240</color>
+    <color name="ve_item_bg">#FF353D4A</color>
+    <color name="ve_item_bg_selected">#FFFF3B30</color>
+    <color name="ve_item_text">#FFB0BCC8</color>
+    <color name="ve_item_text_selected">#FFFFFFFF</color>
+    <color name="ve_icon_tint">#FFCCDDE8</color>
+    <color name="ve_icon_tint_selected">#FFFFFFFF</color>
+</resources>

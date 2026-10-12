@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_panel_rounded"
+    android:clipChildren="true"
+    android:clipToPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/panel_content_padding">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/music_title"
+            android:textColor="@color/on_surface"
+            android:textSize="@dimen/panel_title_text_size"
+            android:textStyle="bold" />
+
+        <!-- Now playing info + progress -->
+        <TextView
+            android:id="@+id/musicNowPlayingText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/music_info_margin_top"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:text="@string/music_no_track"
+            android:textColor="@color/on_surface"
+            android:textSize="@dimen/music_info_text_size" />
+
+        <SeekBar
+            android:id="@+id/musicSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/music_seekbar_margin_top"
+            android:max="1000"
+            android:progress="0" />
+
+        <!-- Time labels -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/musicCurrentTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0:00"
+                android:textColor="@color/on_surface_muted"
+                android:textSize="@dimen/music_time_text_size" />
+
+            <TextView
+                android:id="@+id/musicTotalTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="@color/on_surface_muted"
+                android:textSize="@dimen/music_time_text_size" />
+        </LinearLayout>
+
+        <!-- Transport controls: prev / play-pause / next (centered) + play mode (right) -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/music_transport_margin_top">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/musicPrevButton"
+                    android:layout_width="@dimen/music_transport_button_size"
+                    android:layout_height="@dimen/music_transport_button_size"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:padding="@dimen/music_transport_padding"
+                    android:src="@drawable/ic_skip_previous"
+                    android:tint="@color/on_surface"
+                    android:contentDescription="Previous" />
+
+                <ImageView
+                    android:id="@+id/musicPlayPauseButton"
+                    android:layout_width="@dimen/music_play_button_size"
+                    android:layout_height="@dimen/music_play_button_size"
+                    android:layout_marginStart="@dimen/music_play_button_margin"
+                    android:layout_marginEnd="@dimen/music_play_button_margin"
+                    android:background="@drawable/bg_music_play_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:padding="@dimen/music_play_button_padding"
+                    android:src="@drawable/ic_play"
+                    android:tint="@color/on_primary"
+                    android:contentDescription="Play" />
+
+                <ImageView
+                    android:id="@+id/musicNextButton"
+                    android:layout_width="@dimen/music_transport_button_size"
+                    android:layout_height="@dimen/music_transport_button_size"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                    android:padding="@dimen/music_transport_padding"
+                    android:src="@drawable/ic_skip_next"
+                    android:tint="@color/on_surface"
+                    android:contentDescription="Next" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/musicPlayModeButton"
+                android:layout_width="@dimen/music_mode_button_size"
+                android:layout_height="@dimen/music_mode_button_size"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                android:padding="@dimen/music_mode_padding"
+                android:src="@drawable/ic_repeat_all"
+                android:tint="@color/on_surface"
+                android:contentDescription="Play mode" />
+        </RelativeLayout>
+
+        <!-- Playlist (scrollable) -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="@dimen/music_playlist_margin_top"
+            android:fadingEdge="vertical"
+            android:fadingEdgeLength="12dp"
+            android:requiresFadingEdge="vertical"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/musicPlaylistContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+    </LinearLayout>
+</FrameLayout>

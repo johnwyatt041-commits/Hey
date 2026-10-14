@@ -129,6 +129,12 @@ class DebugActivity : AppCompatActivity() {
         bindingLeft.seekFloatingAlpha.progress = ((config.floatingWindowAlpha - 0.1f) / 0.1f).toInt()
         bindingLeft.textFloatingAlpha.text = String.format("%.1f", config.floatingWindowAlpha)
         bindingLeft.editMusicFolder.setText(config.musicFolderPath)
+        val destCheckedId = if (config.musicSpeakerDestination == AppConfig.MUSIC_SPEAKER_IN_CABIN) {
+            R.id.radioDestCabin
+        } else {
+            R.id.radioDestExternal
+        }
+        bindingLeft.radioMusicSpeakerDest.check(destCheckedId)
 
         // Audio settings
         bindingLeft.editAudioUsage.setText(config.audioUsage.toString())
@@ -168,6 +174,11 @@ class DebugActivity : AppCompatActivity() {
             config.floatingWindowAlpha = bindingLeft.seekFloatingAlpha.progress * 0.1f + 0.1f
             val musicFolder = bindingLeft.editMusicFolder.text.toString().trim()
             if (musicFolder.isNotEmpty()) config.musicFolderPath = musicFolder
+            config.musicSpeakerDestination = if (bindingLeft.radioMusicSpeakerDest.checkedRadioButtonId == R.id.radioDestCabin) {
+                AppConfig.MUSIC_SPEAKER_IN_CABIN
+            } else {
+                AppConfig.MUSIC_SPEAKER_EXTERNAL
+            }
 
             // Audio settings
             bindingLeft.editAudioUsage.text.toString().trim().toIntOrNull()?.let {
@@ -325,6 +336,13 @@ class DebugActivity : AppCompatActivity() {
         bindingLeft.checkFloatingWindow.setOnCheckedChangeListener { _, _ ->
             saveConfigFromUI()
             applyFloatingWindowConfig()
+        }
+        bindingLeft.radioMusicSpeakerDest.setOnCheckedChangeListener { _, checkedId ->
+            config.musicSpeakerDestination = if (checkedId == R.id.radioDestCabin) {
+                AppConfig.MUSIC_SPEAKER_IN_CABIN
+            } else {
+                AppConfig.MUSIC_SPEAKER_EXTERNAL
+            }
         }
     }
 

@@ -437,6 +437,69 @@
                     app:tint="@color/on_surface_muted" />
             </LinearLayout>
 
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@color/debug_divider" />
+
+            <!-- Music / Quick sound speaker destination -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/music_speaker_dest_title"
+                    android:textColor="@color/on_surface"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="@string/music_speaker_dest_desc"
+                    android:textColor="@color/on_surface_dim"
+                    android:textSize="22sp" />
+
+                <RadioGroup
+                    android:id="@+id/radioMusicSpeakerDest"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/radioDestExternal"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="@string/quick_sound_dest_external"
+                        android:textColor="@color/radio_text_color"
+                        android:textSize="23sp"
+                        android:background="@drawable/bg_radio_option" />
+
+                    <RadioButton
+                        android:id="@+id/radioDestCabin"
+                        android:layout_width="0dp"
+                        android:layout_height="62dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="@string/quick_sound_dest_cabin"
+                        android:textColor="@color/radio_text_color"
+                        android:textSize="23sp"
+                        android:background="@drawable/bg_radio_option" />
+                </RadioGroup>
+            </LinearLayout>
+
         </LinearLayout>
 
         <!-- ═══════════════════ CARD 2: 音频配置 ═══════════════════ -->

@@ -49,6 +49,11 @@
     <string name="quick_sound_gesture_double">双击</string>
     <string name="quick_sound_gesture_long">长按</string>
     <string name="quick_sound_confirm">确定</string>
+    <string name="quick_sound_dest_label">播放通道 (输出设备)</string>
+    <string name="quick_sound_dest_external">车外扬声器 (喊话/外放通道)</string>
+    <string name="quick_sound_dest_cabin">车内音响 (媒体通道)</string>
+    <string name="music_speaker_dest_title">音乐/快捷音效输出通道</string>
+    <string name="music_speaker_dest_desc">选择将快捷音效与本地音乐输出到车外扬声器或车内音响</string>
 
     <!-- Music player -->
     <string name="music_title">音乐</string>

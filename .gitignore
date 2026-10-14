@@ -16,3 +16,5 @@ local.properties
 *.pem
 *.log
 __pycache__/
+*.apk
+*.idsig

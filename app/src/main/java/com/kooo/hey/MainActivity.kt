@@ -39,6 +39,8 @@ import com.kooo.hey.ui.CountdownRingView
 import com.kooo.hey.ui.MusicPlayerPanel
 import com.kooo.hey.log.AppLog
 import com.kooo.hey.ui.GuideOverlay
+import com.kooo.hey.ui.GainSliderView
+import android.graphics.Color
 import android.provider.Settings
 import android.view.KeyEvent
 import android.widget.EditText
@@ -247,6 +249,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupGainSlider()
+        setupMusicVolumeSlider()
         setupTalkButton()
         setupSettingsButton()
         setupGuideButton()
@@ -277,10 +280,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         isInForeground = true
-        // Sync gain slider range (may have changed in DebugActivity)
+        // Sync gain and volume sliders (may have changed in DebugActivity)
         if (::config.isInitialized) {
             binding.gainSlider.setGainRange(config.minGainLimit, config.maxGainLimit)
             binding.gainSlider.setGain(config.volumeGain)
+            binding.musicVolumeSlider.setGain(config.musicVolume)
             updateQuickButtonsUi()
         }
         AmpManager.acquire(this, AmpManager.SESSION_FOREGROUND)
@@ -813,47 +817,44 @@ class MainActivity : AppCompatActivity() {
         startForegroundService(Intent(this, FloatingWindowService::class.java))
     }
 
-    // ==================== Gain Slider ====================
-
-    private enum class SliderMode { TALK, MUSIC }
-    private var currentSliderMode = SliderMode.TALK
+    // ==================== Gain & Volume Sliders ====================
 
     private fun setupGainSlider() {
-        // 初始化增益滑块，使用配置的增益范围
+        // Left slider: Talk Mic Gain (1.0x ~ 30.0x)
+        binding.gainSlider.label = "🎤"
+        binding.gainSlider.valueMode = GainSliderView.ValueMode.MULTIPLIER
         binding.gainSlider.linearMapping = true
         binding.gainSlider.setGainRange(config.minGainLimit, config.maxGainLimit)
         binding.gainSlider.setGain(config.volumeGain)
 
-        // 增益变化回调 — dispatches to the correct config based on mode
         binding.gainSlider.onGainChanged = { newGain ->
-            when (currentSliderMode) {
-                SliderMode.TALK -> {
-                    config.volumeGain = newGain
-                    if (talkState == TalkState.TALKING_COUNTDOWN || talkState == TalkState.TALKING_CONTINUOUS) {
-                        audioEngine.liveGain = newGain
-                    }
-                }
-                SliderMode.MUSIC -> {
-                    config.musicVolume = newGain
-                    musicPlayerPanel.updatePlaybackVolume(newGain)
-                }
+            config.volumeGain = newGain
+            if (talkState == TalkState.TALKING_COUNTDOWN || talkState == TalkState.TALKING_CONTINUOUS) {
+                audioEngine.liveGain = newGain
             }
         }
     }
 
-    private fun switchSliderMode(mode: SliderMode) {
-        if (currentSliderMode == mode) return
-        currentSliderMode = mode
-        when (mode) {
-            SliderMode.TALK -> {
-                binding.gainSlider.animateToConfig(
-                    config.minGainLimit, config.maxGainLimit, config.volumeGain,
-                    linear = true
-                )
-            }
-            SliderMode.MUSIC -> {
-                binding.gainSlider.animateToConfig(0.1f, 3.0f, config.musicVolume, linear = false)
-            }
+    private fun setupMusicVolumeSlider() {
+        // Right slider: Music & Quick Sound Volume (0% ~ 100%)
+        binding.musicVolumeSlider.label = "🎵"
+        binding.musicVolumeSlider.valueMode = GainSliderView.ValueMode.PERCENT
+        binding.musicVolumeSlider.linearMapping = true
+        binding.musicVolumeSlider.setGradientColors(
+            intArrayOf(
+                Color.rgb(33, 150, 243),  // Blue
+                Color.rgb(0, 188, 212),   // Cyan
+                Color.rgb(76, 175, 80)    // Green
+            )
+        )
+        binding.musicVolumeSlider.setGainRange(0.0f, 1.0f)
+        binding.musicVolumeSlider.setGain(config.musicVolume)
+
+        binding.musicVolumeSlider.onGainChanged = { newVolume ->
+            val vol = newVolume.coerceIn(0f, 1f)
+            config.musicVolume = vol
+            MusicPlaybackController.get(this).setVolume(vol)
+            musicPlayerPanel.updatePlaybackVolume(vol)
         }
     }
 
@@ -1035,7 +1036,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             val name = config.getQuickSoundName(index)
             musicManager.playPath(path, name)
-            switchSliderMode(SliderMode.MUSIC)
         }
     }
 
@@ -1063,9 +1063,18 @@ class MainActivity : AppCompatActivity() {
         val textKeyBinding = dialogView.findViewById<TextView>(R.id.textKeyBinding)
         val btnUnbindKey = dialogView.findViewById<TextView>(R.id.btnUnbindKey)
         val btnBindKey = dialogView.findViewById<TextView>(R.id.btnBindKey)
+        val rgSpeakerDest = dialogView.findViewById<RadioGroup>(R.id.rgSpeakerDest)
+        val rbDestExternal = dialogView.findViewById<RadioButton>(R.id.rbDestExternal)
+        val rbDestCabin = dialogView.findViewById<RadioButton>(R.id.rbDestCabin)
         val btnClear = dialogView.findViewById<TextView>(R.id.btnClear)
         val btnCancel = dialogView.findViewById<TextView>(R.id.btnCancel)
         val btnSave = dialogView.findViewById<TextView>(R.id.btnSave)
+
+        if (config.musicSpeakerDestination == AppConfig.MUSIC_SPEAKER_IN_CABIN) {
+            rbDestCabin.isChecked = true
+        } else {
+            rbDestExternal.isChecked = true
+        }
 
         titleView.text = getString(R.string.quick_sound_dialog_title) + " " + (index + 1)
         val currentName = config.getQuickSoundName(index)
@@ -1144,6 +1153,11 @@ class MainActivity : AppCompatActivity() {
             config.setQuickSoundPath(index, selectedPath)
             config.setQuickSoundKeyCode(index, selectedKeyCode)
             config.setQuickSoundGesture(index, selectedGesture)
+            config.musicSpeakerDestination = if (rbDestCabin.isChecked) {
+                AppConfig.MUSIC_SPEAKER_IN_CABIN
+            } else {
+                AppConfig.MUSIC_SPEAKER_EXTERNAL
+            }
             updateQuickButtonsUi()
             dialog.dismiss()
         }
@@ -1322,11 +1336,6 @@ class MainActivity : AppCompatActivity() {
             animate().alpha(1f).translationX(0f).setDuration(500)
                 .setInterpolator(android.view.animation.DecelerateInterpolator()).start()
         }
-
-        // Switch gain slider to the appropriate volume mode
-        if (mode == CenterMode.MUSIC) {
-            switchSliderMode(SliderMode.MUSIC)
-        }
     }
 
     private fun restoreCenterCircle() {
@@ -1338,9 +1347,6 @@ class MainActivity : AppCompatActivity() {
         binding.statusText.visibility = View.VISIBLE
         binding.functionButtonsRow.visibility = View.VISIBLE
         binding.panelBackButton.visibility = View.GONE
-
-        // Restore gain slider to talk mode
-        switchSliderMode(SliderMode.TALK)
     }
 
     // ==================== Microphone Permission ====================

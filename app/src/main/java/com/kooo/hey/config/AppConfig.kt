@@ -89,10 +89,19 @@ class AppConfig(private val context: Context) {
         get() = prefs.getFloat(KEY_VOLUME_GAIN, DEFAULT_VOLUME_GAIN).coerceIn(minGainLimit, maxGainLimit)
         set(value) = prefs.edit().putFloat(KEY_VOLUME_GAIN, value.coerceIn(minGainLimit, maxGainLimit)).apply()
 
-    /** Music playback volume (0.1 ~ 3.0, 1.0 = original). */
+    /** Music playback volume (0.0 ~ 1.0, 0.5 = 50%, 1.0 = 100%). */
     var musicVolume: Float
-        get() = prefs.getFloat(KEY_MUSIC_VOLUME, DEFAULT_MEDIA_VOLUME).coerceIn(0.1f, 3.0f)
-        set(value) = prefs.edit().putFloat(KEY_MUSIC_VOLUME, value.coerceIn(0.1f, 3.0f)).apply()
+        get() = prefs.getFloat(KEY_MUSIC_VOLUME, DEFAULT_MEDIA_VOLUME).coerceIn(0.0f, 1.0f)
+        set(value) = prefs.edit().putFloat(KEY_MUSIC_VOLUME, value.coerceIn(0.0f, 1.0f)).apply()
+
+    /**
+     * Music / Quick sound speaker destination:
+     * 0 = MUSIC_SPEAKER_IN_CABIN (USAGE_MEDIA = 1)
+     * 1 = MUSIC_SPEAKER_EXTERNAL (appConfig.audioUsage = 73/72)
+     */
+    var musicSpeakerDestination: Int
+        get() = prefs.getInt(KEY_MUSIC_SPEAKER_DEST, MUSIC_SPEAKER_EXTERNAL).coerceIn(0, 1)
+        set(value) = prefs.edit().putInt(KEY_MUSIC_SPEAKER_DEST, value.coerceIn(0, 1)).apply()
 
     /** Software noise gate (suppress low-level noise). Default OFF. */
     var enableNoiseGate: Boolean
@@ -440,6 +449,7 @@ class AppConfig(private val context: Context) {
         private const val KEY_RIPPLE_THRESHOLD = "ripple_threshold"
         private const val KEY_MUSIC_FOLDER = "music_folder"
         private const val KEY_MUSIC_VOLUME = "music_volume"
+        private const val KEY_MUSIC_SPEAKER_DEST = "music_speaker_dest"
         private const val KEY_MUSIC_PLAY_MODE = "music_play_mode"
         private const val KEY_VOLUME_GROUP_ID = "volume_group_id"
         private const val KEY_LAUNCH_ACTION = "launch_action"
@@ -448,6 +458,9 @@ class AppConfig(private val context: Context) {
         private const val KEY_AMP_TXN_CODE = "amp_transaction_code"
         private const val KEY_LOCAL_CONFIG_MARKER = "local_config_marker"
         private const val LOCAL_CONFIG_VERSION = 1
+
+        const val MUSIC_SPEAKER_IN_CABIN = 0
+        const val MUSIC_SPEAKER_EXTERNAL = 1
 
         const val DEFAULT_AMP_TXN_CODE = 55
         const val DEFAULT_AUDIO_SOURCE = 7  // VOICE_COMMUNICATION (with system AEC/NS)
@@ -462,7 +475,7 @@ class AppConfig(private val context: Context) {
         const val DEFAULT_LOW_PASS_CUTOFF = 4000
         const val DEFAULT_FREQ_SHIFT_HZ = 5.0f
         private const val DEFAULT_NOISE_GATE_STRENGTH = 0.5f
-        const val DEFAULT_MEDIA_VOLUME = 1.0f  // 1.0x = original volume
+        const val DEFAULT_MEDIA_VOLUME = 0.7f  // 70% default volume
         val DEFAULT_MUSIC_FOLDER: String = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + "/Hey/music"
 
         const val LAUNCH_ACTION_TALK = 0

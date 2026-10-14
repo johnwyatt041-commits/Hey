@@ -26,6 +26,10 @@ class GainSliderView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    enum class ValueMode { MULTIPLIER, PERCENT }
+    var valueMode: ValueMode = ValueMode.MULTIPLIER
+    var label: String = ""
+
     // 增益范围
     private var minGain = 1.0f
     private var maxGain = 30.0f
@@ -66,18 +70,25 @@ class GainSliderView @JvmOverloads constructor(
     }
 
     private val hintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(180, 255, 255, 255)
+        color = Color.argb(220, 255, 255, 255)
         textAlign = Paint.Align.CENTER
-        textSize = 28f
+        textSize = 34f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
     // 渐变色（低增益=绿色，中增益=黄色，高增益=红色）
-    private val gradientColors = intArrayOf(
+    private var gradientColors = intArrayOf(
         Color.rgb(76, 175, 80),   // 绿色
         Color.rgb(255, 235, 59),  // 黄色
         Color.rgb(255, 152, 0),   // 橙色
         Color.rgb(244, 67, 54)    // 红色
     )
+
+    fun setGradientColors(colors: IntArray) {
+        gradientColors = colors
+        updateGradient()
+        invalidate()
+    }
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)  // 启用阴影
@@ -108,6 +119,11 @@ class GainSliderView @JvmOverloads constructor(
         val trackHeight = height - paddingTop - paddingBottom - 160f
         val trackTop = paddingTop + 110f
         val trackBottom = trackTop + trackHeight
+
+        // Draw top label (e.g. "🎤" or "🎵")
+        if (label.isNotEmpty()) {
+            canvas.drawText(label, centerX, paddingTop + 65f, hintPaint)
+        }
 
         // 计算滑块位置（使用对数映射，感知均匀）
         val position = gainToPosition(currentGain)
@@ -240,13 +256,23 @@ class GainSliderView @JvmOverloads constructor(
     }
 
     /**
-     * 格式化显示值（大范围显示整数，小范围显示一位小数）
+     * 格式化显示值（百分比模式或增益倍数模式）
      */
     private fun formatGainText(): String {
-        return if (maxGain <= 5f) {
-            String.format("%.1f", currentGain)
-        } else {
-            "${currentGain.toInt()}"
+        return when (valueMode) {
+            ValueMode.PERCENT -> {
+                val pct = if (maxGain <= minGain) 0 else {
+                    ((currentGain - minGain) / (maxGain - minGain) * 100).toInt().coerceIn(0, 100)
+                }
+                "$pct%"
+            }
+            ValueMode.MULTIPLIER -> {
+                if (maxGain <= 5f) {
+                    String.format("%.1fx", currentGain)
+                } else {
+                    "${currentGain.toInt()}x"
+                }
+            }
         }
     }
 

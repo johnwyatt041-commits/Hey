@@ -319,7 +319,7 @@
             android:textSize="@dimen/func_label_text_size" />
     </LinearLayout>
 
-    <!-- Gain slider (left side, vertical) -->
+    <!-- Gain slider (left side, vertical: Talk Mic Gain) -->
     <com.kooo.hey.ui.GainSliderView
         android:id="@+id/gainSlider"
         android:layout_width="@dimen/gain_slider_width"
@@ -331,6 +331,21 @@
         android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.45" />
+
+    <!-- Music Volume slider (right side, vertical: Music / Quick Sound Volume) -->
+    <com.kooo.hey.ui.GainSliderView
+        android:id="@+id/musicVolumeSlider"
+        android:layout_width="@dimen/gain_slider_width"
+        android:layout_height="@dimen/gain_slider_height"
+        android:layout_marginEnd="@dimen/gain_slider_margin_start"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.45" />
 

@@ -154,14 +154,27 @@ class MusicPlayerManager(private val context: Context) {
         playTrackInternal(track)
     }
 
+    private fun isMusicExternal(): Boolean =
+        appConfig.musicSpeakerDestination == AppConfig.MUSIC_SPEAKER_EXTERNAL
+
+    private fun getMusicEffectiveUsage(): Int {
+        val outDevice = if (isMusicExternal()) findOutputDeviceById(appConfig.outputDeviceId) else null
+        if (outDevice != null) return 0
+        return if (isMusicExternal()) {
+            appConfig.audioUsage
+        } else {
+            AudioAttributes.USAGE_MEDIA
+        }
+    }
+
     private fun playTrackInternal(track: Track) {
         stopInternal()
         usingSoftPlayer = false
         currentTrack = track
 
         try {
-            val outDevice = findOutputDeviceById(appConfig.outputDeviceId)
-            val effectiveUsage = if (outDevice != null) 0 else appConfig.audioUsage
+            val outDevice = if (isMusicExternal()) findOutputDeviceById(appConfig.outputDeviceId) else null
+            val effectiveUsage = getMusicEffectiveUsage()
             mediaPlayer = MediaPlayer().apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
@@ -181,7 +194,7 @@ class MusicPlayerManager(private val context: Context) {
                 }
                 setDataSource(track.path)
                 prepare()
-                val vol = appConfig.musicVolume.coerceAtMost(1.0f)
+                val vol = appConfig.musicVolume.coerceIn(0f, 1f)
                 setVolume(vol, vol)
                 setOnCompletionListener { handleTrackCompletion() }
                 lastPlayStartTime = System.currentTimeMillis()
@@ -227,7 +240,10 @@ class MusicPlayerManager(private val context: Context) {
             }
         }
         lastPlayStartTime = System.currentTimeMillis()
-        sp.play(track.path, appConfig.audioUsage, appConfig.musicVolume.coerceAtMost(1.0f), appConfig.outputDeviceId)
+        val effectiveUsage = getMusicEffectiveUsage()
+        val vol = appConfig.musicVolume.coerceIn(0f, 1f)
+        val outDeviceId = if (isMusicExternal()) appConfig.outputDeviceId else 0
+        sp.play(track.path, effectiveUsage, vol, outDeviceId)
         isPlaying = true
         AmpManager.acquire(ctx, "music")
         startPlaybackService(track.name)
@@ -308,9 +324,10 @@ class MusicPlayerManager(private val context: Context) {
     }
 
     fun setVolume(volume: Float) {
+        val vol = volume.coerceIn(0f, 1f)
         try {
-            if (usingSoftPlayer) softPlayer?.setVolume(volume)
-            else mediaPlayer?.setVolume(volume, volume)
+            if (usingSoftPlayer) softPlayer?.setVolume(vol)
+            else mediaPlayer?.setVolume(vol, vol)
         } catch (_: Exception) { }
     }
 

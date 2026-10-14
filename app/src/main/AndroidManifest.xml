@@ -47,10 +47,21 @@
                 <action android:name="com.kooo.hey.action.START_TALK" />
                 <action android:name="com.kooo.hey.action.STOP_TALK" />
                 <action android:name="com.kooo.hey.action.TOGGLE_TALK" />
+                <action android:name="com.kooo.hey.action.TOGGLE_APP" />
+                <action android:name="com.kooo.hey.action.STOP_QUICK_SOUND" />
+                <action android:name="com.kooo.hey.action.STOP_ALL" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_1" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_2" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_3" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_4" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_5" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_6" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_7" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_8" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_9" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_10" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_11" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_12" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -103,10 +114,21 @@
                 <action android:name="com.kooo.hey.action.START_TALK" />
                 <action android:name="com.kooo.hey.action.STOP_TALK" />
                 <action android:name="com.kooo.hey.action.TOGGLE_TALK" />
+                <action android:name="com.kooo.hey.action.TOGGLE_APP" />
+                <action android:name="com.kooo.hey.action.STOP_QUICK_SOUND" />
+                <action android:name="com.kooo.hey.action.STOP_ALL" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_1" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_2" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_3" />
                 <action android:name="com.kooo.hey.action.PLAY_QUICK_4" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_5" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_6" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_7" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_8" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_9" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_10" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_11" />
+                <action android:name="com.kooo.hey.action.PLAY_QUICK_12" />
             </intent-filter>
         </receiver>
 

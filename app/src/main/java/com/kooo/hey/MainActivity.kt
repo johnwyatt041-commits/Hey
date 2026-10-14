@@ -747,6 +747,10 @@ class MainActivity : AppCompatActivity() {
                 if (fromNewIntent) toggleDefaultAction()
                 else handler.post { toggleDefaultAction() }
             }
+            action == HeyCommandReceiver.ACTION_TOGGLE_APP -> {
+                if (fromNewIntent) toggleAppForegroundBackground()
+                else handler.post { toggleAppForegroundBackground() }
+            }
             action?.startsWith(HeyCommandReceiver.ACTION_PLAY_QUICK_PREFIX) == true -> {
                 val indexStr = action.removePrefix(HeyCommandReceiver.ACTION_PLAY_QUICK_PREFIX)
                 val index = (indexStr.toIntOrNull() ?: 1) - 1
@@ -769,7 +773,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun stopAndMoveBack() {
+    fun stopAndMoveBack() {
         if (talkState == TalkState.TALKING_COUNTDOWN || talkState == TalkState.TALKING_CONTINUOUS) {
             stopTalking()
         }

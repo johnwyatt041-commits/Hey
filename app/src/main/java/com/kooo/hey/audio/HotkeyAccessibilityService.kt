@@ -15,6 +15,7 @@ import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.app.NotificationCompat
+import com.kooo.hey.AppWakeupHelper
 import com.kooo.hey.DebugActivity
 import com.kooo.hey.FloatingWindowService
 import com.kooo.hey.MainActivity
@@ -97,32 +98,7 @@ class HotkeyAccessibilityService : AccessibilityService() {
         return START_STICKY
     }
 
-    /**
-     * Determines whether any activity belonging to this application is currently in the foreground.
-     * Uses activity lifecycle states and system process importance for maximum reliability.
-     */
-    private fun isAppInForeground(): Boolean {
-        if (MainActivity.isInForeground) return true
-        if (DebugActivity.isForeground) return true
-
-        try {
-            val am = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
-            val processes = am?.runningAppProcesses
-            if (processes != null) {
-                val myPkg = packageName
-                for (proc in processes) {
-                    if (proc.processName == myPkg) {
-                        val isFg = proc.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
-                        AppLog.d(TAG, "Process importance=${proc.importance} (foreground=$isFg)")
-                        return isFg
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            AppLog.w(TAG, "Failed to inspect process importance", e)
-        }
-        return false
-    }
+    private fun isAppInForeground(): Boolean = AppWakeupHelper.isAppInForeground(this)
 
     private fun handleSlotTriggered(slot: Int) {
         AppLog.d(TAG, "Background hotkey triggered for slot: $slot")
@@ -186,102 +162,8 @@ class HotkeyAccessibilityService : AccessibilityService() {
         }
     }
 
-    /**
-     * Brings Hey! from background to foreground using multiple synergistic mechanisms:
-     * 1. ActivityManager.AppTask.moveToFront() to raise the existing task directly.
-     * 2. Intent launch with ACTION_MAIN & CATEGORY_LAUNCHER (same as tapping launcher icon).
-     * 3. ActivityOptions with MODE_BACKGROUND_ACTIVITY_START_ALLOWED for Android 14+ BAL exemption.
-     * 4. FullScreenIntent notification trampoline (bypasses BAL restrictions via system_server).
-     */
     private fun bringAppToForeground(customIntent: Intent? = null) {
-        AppLog.i(TAG, "bringAppToForeground invoked")
-
-        // 1. Move task to front via AppTask
-        try {
-            val am = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
-            val tasks = am?.appTasks
-            if (!tasks.isNullOrEmpty()) {
-                for (task in tasks) {
-                    task.moveToFront()
-                    AppLog.d(TAG, "Invoked appTask.moveToFront()")
-                }
-            }
-        } catch (e: Exception) {
-            AppLog.w(TAG, "appTask.moveToFront failed", e)
-        }
-
-        // 2. Build launcher-level intent
-        val launchIntent = customIntent ?: packageManager.getLaunchIntentForPackage(packageName)?.apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        } ?: Intent(this, MainActivity::class.java).apply {
-            action = Intent.ACTION_MAIN
-            addCategory(Intent.CATEGORY_LAUNCHER)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        }
-
-        val options = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            ActivityOptions.makeBasic().apply {
-                pendingIntentBackgroundActivityStartMode = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-            }
-        } else {
-            ActivityOptions.makeBasic()
-        }
-
-        // 3. startActivity
-        try {
-            startActivity(launchIntent, options.toBundle())
-            AppLog.d(TAG, "Invoked startActivity(launchIntent)")
-        } catch (e: Exception) {
-            AppLog.w(TAG, "startActivity failed", e)
-        }
-
-        // 4. PendingIntent.send() with options
-        try {
-            val pendingIntent = PendingIntent.getActivity(
-                this,
-                WAKEUP_PENDING_INTENT_CODE,
-                launchIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            pendingIntent.send(this, 0, null, null, null, null, options.toBundle())
-            AppLog.d(TAG, "Invoked PendingIntent.send()")
-        } catch (e: Exception) {
-            AppLog.w(TAG, "PendingIntent.send() failed", e)
-        }
-
-        // 5. System fullScreenIntent notification trampoline
-        try {
-            triggerFullScreenWakeup(launchIntent)
-        } catch (e: Exception) {
-            AppLog.w(TAG, "triggerFullScreenWakeup failed", e)
-        }
-    }
-
-    private fun triggerFullScreenWakeup(intent: Intent) {
-        val fullScreenPendingIntent = PendingIntent.getActivity(
-            this,
-            WAKEUP_NOTIFICATION_ID,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val wakeNotification = NotificationCompat.Builder(this, CHANNEL_WAKEUP_ID)
-            .setSmallIcon(R.drawable.ic_mic)
-            .setContentTitle("Hey!")
-            .setContentText("正在切换至前台…")
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
-            .setAutoCancel(true)
-            .setTimeoutAfter(3000)
-            .build()
-
-        notificationManager.notify(WAKEUP_NOTIFICATION_ID, wakeNotification)
-        AppLog.d(TAG, "Posted fullScreenIntent wakeup notification")
+        AppWakeupHelper.bringAppToForeground(this, customIntent)
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {

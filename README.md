@@ -1,184 +1,188 @@
 # Hey！
 
-Hey！是一个面向吉利、领克相关车型的扩音与音频工具。它从设备麦克风采集声音，经增益、滤波和音效处理后输出到系统音频通道，同时提供语音播报、本地音乐播放和音频路由调试能力。
+Hey！是一个专为车载 Android 系统（如吉利、领克等车型及改装大屏车机）深度定制的车外扩音、音频路由与快捷音效工具。它支持从车内麦克风采集音频，经增益、滤波与防啸叫处理后实时输出至车外低速行人警示扬声器（AVAS）或车内音响，同时提供全局扬声器通道切换、自定义快捷音效插槽、方向盘方控/蓝牙按键监听绑定，以及对 EVCC / Tasker 等车载自动化工具的广播指令对接。
 
-> Hey！需要使用车载系统音频接口及部分系统级权限，不是面向普通 Android 手机的通用扩音器。不同车型、车机版本和音频策略存在差异，安装成功不代表所有功能均可用。
+> [!NOTE]
+> Hey！需要使用车载系统专有音频通道（如车外扩音/行人警示音 Usage）及部分系统级权限。不同车型、车机固件版本与硬件音频策略存在差异，安装成功不代表所有硬件通道均受支持。
 
-## 主要功能
+---
 
-- 实时喊话：短按开始 60 秒喊话，长按进入持续喊话，再次点击即可停止。
-- 音量增益：通过主界面滑杆实时调整麦克风输出增益。
-- 变声效果：支持原声、大叔、萝莉、机器人和电音效果。
-- 语音播报：添加、管理并播放常用文字播报内容。
-- 本地音乐：选择设备内的音乐目录，支持单曲、列表循环和单曲循环。
-- 本地音频处理：提供带通滤波、噪声门、自动增益、频率偏移和混响等选项。
-- 快捷操作：可启用悬浮按钮，也支持广播指令触发开始、停止或切换喊话。
-- 调试面板：查看本地运行日志，枚举音频设备，测试音频输出、麦克风、音频路由及音量组。
-- 本地设备配置：根据 `Build.MODEL` 加载随应用打包的默认参数。
-- 自适应界面：统一版本覆盖横竖屏和不同尺寸的车机屏幕。
+## 🌟 主要功能
 
-## 运行环境
+- **车外实时喊话**：短按中央按钮开始 60 秒限时对讲，长按进入持续喊话模式，再次点击即刻停止；支持麦克风音频电平动态光晕反馈。
+- **对称双音量滑杆**：
+  - **左侧**：麦克风输入与输出放大增益滑杆（支持细粒度软硬件增益限制）。
+  - **右侧**：本地音乐与快捷音效独立播放音量滑杆。
+- **输出扬声器通道一键切换**：
+  - 📢 **车外扬声器**：切换至车外低速提示音/行人警示音通道，实现车外扩音与喊话。
+  - 🎵 **车内音响**：切换至车机常规媒体通道，用作普通车内播放或测试。
+- **动态快捷音效按键（1~12 个）**：
+  - 支持动态添加与删除按键插槽（最多 12 个）。
+  - 每个插槽可自定义名称、绑定本地音频文件（mp3/wav/flac 等）。
+  - 支持直接在后台静默播放/停止，**不遮挡车机前台导航（高德/百度）或倒车影像**。
+- **方向盘方控与蓝牙按键监听（智能透传）**：
+  - 拥有按键录制学习弹窗，支持将方控或遥控按键录制为 **单击**、**双击** 或 **长按**。
+  - **原车功能智能透传**：当按键仅绑定了【长按】或【双击】时，短按与单击将在判定超时后**自动无缝回放并还给原车系统**（原车正常切歌、调音量），只有长按或双击时才会触发 Hey!，互不冲突。
+  - 集成底层 `MediaSession` 媒体会话与音频焦点机制，完美解决深度定制车机强行拦截切歌键的问题。
+- **系统级无障碍后台按键监听**：
+  - 借助无障碍服务，在车机处于导航、桌面、收音机或分屏时，均可在后台捕捉按键并触发对应功能。
+  - 车机下拉通知栏常驻控制中心，提供一键【开启 / 暂停】按键监听，随时恢复原车按键。
+- **EVCC 与外部第三方自动化完整广播对接**：
+  - 专为车载第三方自动化软件（如 EVCC、Tasker、快捷指令、ADB 等）打造的独立广播调度中心 [`HeyCommandReceiver`](app/src/main/java/com/kooo/hey/HeyCommandReceiver.kt)。
+  - 支持通过标准 Action 触发喊话、停止、前后台切换、静默播放指定快捷音效或一键全停。
+- **跨版本协同唤醒引擎（AppWakeupHelper）**：
+  - 整合 AppTask 任务栈置顶、Launcher Intent、Android 14+ BAL 后台启动豁免以及高优先级全屏通知蹦床，确保车机后台秒级稳定唤起。
+- **车机大屏深度自适应**：
+  - 针对 2560×1600 等大屏车机，以及 800dp、1000dp、1400dp 等横竖屏车机分辨率进行了界面组件与字体放大适配。
+- **本地调试面板**：
+  - 查看实时运行日志，枚举底层音频输入/输出设备与 AudioUsage，测试音频路由、测试音、Ecarx DSP 模式及车机音量组。
 
-- Android 9（API 28）及以上。
-- 兼容的车载 Android 音频系统。
-- 麦克风权限；播放本地音乐时还需要音频文件读取权限。
-- 完整使用系统音频路由、音量组和系统日志相关功能时，通常需要兼容的平台签名或等效的系统权限配置。
+---
 
-项目不会提供或提交任何平台签名私钥。请仅使用你有权使用的签名材料。
+## 📋 EVCC / 第三方广播自动化配置清单
 
-## 使用方法
+如果你的车机安装了 **EVCC** 或其他车载自动化按键映射工具，可以通过“发送广播”动作直接与 Hey！无缝联动，作为物理方控按键的可靠执行方案。
 
-### 基本喊话
+### 配置规范
+- **目标包名**：`com.kooo.hey`
+- **接收器类名**（可选）：`com.kooo.hey.HeyCommandReceiver`
+- **额外参数 (Extras)**：无需填写（留空）
 
-1. 启动应用并授予麦克风权限。
-2. 短按中央按钮，松开后开始 60 秒喊话。
-3. 长按中央按钮，等待进度环完成后松开，即可进入持续喊话。
-4. 喊话过程中再次点击中央按钮即可停止。
-5. 使用底部增益滑杆调整输出音量；出现反馈或啸叫时应立即降低增益。
+### 支持的广播 Action 列表
 
-### 变声、语音与音乐
+| 功能描述 | 广播 Action | 动作说明 |
+|---|---|---|
+| **切换对讲/喊话** | `com.kooo.hey.action.TOGGLE_TALK` | 正在喊话时停止，未喊话时启动（推荐绑在方向盘自定义键） |
+| **开始对讲/喊话** | `com.kooo.hey.action.START_TALK` | 直接启动喊话（支持长按按下触发） |
+| **停止对讲/喊话** | `com.kooo.hey.action.STOP_TALK` | 停止喊话并退回后台（支持长按松开触发） |
+| **应用前/后台切换** | `com.kooo.hey.action.TOGGLE_APP` | 在前台时最小化到后台，在后台时拉起到前台 |
+| **播放快捷音效 1** | `com.kooo.hey.action.PLAY_QUICK_1` | 后台静默播放音效 1，再次触发可停止，不遮挡原车导航 |
+| **播放快捷音效 2** | `com.kooo.hey.action.PLAY_QUICK_2` | 后台静默播放音效 2 |
+| **播放快捷音效 3** | `com.kooo.hey.action.PLAY_QUICK_3` | 后台静默播放音效 3 |
+| **播放快捷音效 4** | `com.kooo.hey.action.PLAY_QUICK_4` | 后台静默播放音效 4 |
+| ... | `com.kooo.hey.action.PLAY_QUICK_5` ~ `12` | 支持最多 12 个自定义快捷音效插槽 |
+| **停止当前音效** | `com.kooo.hey.action.STOP_QUICK_SOUND` | 仅停止当前正在播放的快捷音效 |
+| **紧急一键全停** | `com.kooo.hey.action.STOP_ALL` | 停止所有车外喊话与音效输出 |
 
-- 点击“变声”，选择需要的实时音效；喊话过程中切换也会立即生效。
-- 点击“语音”，输入并保存常用播报文本，然后选择条目播放。
-- 点击“音乐”，授予音频文件权限并选择音乐目录，然后选择曲目和播放模式。
-- 点击返回按钮可退出语音或音乐面板。
-
-### 设置与调试
-
-主界面的设置按钮用于打开调试面板。可以在其中调整：
-
-- 输入、输出设备和音频用途参数。
-- 软件增益范围、混响和降噪选项。
-- 默认启动功能和自动播放条目。
-- 悬浮按钮的开关、尺寸和透明度。
-- 音频设备枚举、测试音、麦克风测试及本地日志。
-
-这些参数直接影响系统音频行为。修改前建议记录原值，并从较低增益开始测试。
-
-### 外部广播控制
-
-应用公开了三个本地广播动作，可供 ADB、硬件按键映射或其他本地自动化工具调用：
-
+#### ADB 命令行调用示例：
 ```bash
-adb shell am broadcast -a com.kooo.hey.action.START_TALK
-adb shell am broadcast -a com.kooo.hey.action.STOP_TALK
-adb shell am broadcast -a com.kooo.hey.action.TOGGLE_TALK
+# 切换车外喊话
+adb shell am broadcast -a com.kooo.hey.action.TOGGLE_TALK -p com.kooo.hey
+
+# 后台播放第 1 个快捷音效
+adb shell am broadcast -a com.kooo.hey.action.PLAY_QUICK_1 -p com.kooo.hey
+
+# 一键停止所有声音
+adb shell am broadcast -a com.kooo.hey.action.STOP_ALL -p com.kooo.hey
 ```
 
-## 本地设备配置
+---
 
-默认配置位于：
+## 🎮 方向盘方控按键绑定机制
 
-```text
-app/src/main/res/raw/device_configs.json
-```
+Hey！内置了智能时序判决与原车功能回放引擎：
 
-应用使用 `Build.MODEL` 精确匹配配置；没有匹配项时读取 `_default`。配置只会写入尚不存在的本地首选项，不会覆盖用户已经修改的设置。
+1. **显式绑定【单击】**：
+   - 按下按键时立即触发 Hey！对应的功能，0 延迟拦截，车机不执行原车功能。
+2. **仅绑定【长按】**：
+   - **短按松开**：如果在 500ms 内松开，系统自动识别为常规点击，**立刻将该键原样还给车机系统**（原车正常切歌/调音量）；
+   - **长按不放**：按住超过 500ms 时，消费该按键并触发 Hey！快捷功能，车机不响应原车动作。
+3. **仅绑定【双击】**：
+   - **单次按下**：进入 300ms 判决窗口；若未按第二次，判定为普通单击并**自动将按键还给车机系统执行**；
+   - **快速连按两次**：判定为双击，触发 Hey！快捷功能。
 
-新增设备配置时，建议只填写需要覆盖的字段：
+---
 
-```json
-{
-  "_default": {
-    "audioSource": 7,
-    "audioUsage": 1,
-    "volumeGain": 2.0,
-    "minGainLimit": 0.5,
-    "maxGainLimit": 10.0,
-    "enableFloatingWindow": false
-  }
-}
-```
+## 🛠️ 运行环境与权限
 
-音频用途、设备 ID 和增益范围取决于目标系统。请通过调试面板逐项验证，不要直接照搬其他设备的参数。
+- **最低支持系统**：Android 9.0（API 28）及以上。
+- **建议目标系统**：Android 11 ~ Android 14+（已针对高版本后台限制与全屏通知做好适配）。
+- **基础权限**：
+  - 录音权限（`RECORD_AUDIO`）：用于麦克风实时喊话。
+  - 音频与存储权限（`READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE`）：用于读取本地音效与音乐。
+- **高级系统权限（可选）**：
+  - 完整使用系统音频底层路由、DSP 模式切换及音量组时，通常需要系统 Platform 签名或系统特权目录（`priv-app`）支持。
 
-## 构建
+---
 
-### 开发环境
+## 🏗️ 编译与构建
 
+### 1. 开发环境要求
 - JDK 17 或更高版本。
-- Android SDK 36。
-- Android NDK。
-- CMake 3.22.1。
+- Android SDK 36（Build-Tools 36.0.0）。
+- Gradle 9.x（项目内置 Gradle Wrapper，无需单独安装）。
 
-项目使用 Gradle Wrapper，无需单独安装 Gradle。
-
-### 签名
-
-Debug 和 Release 默认使用仓库内的标准 AOSP `platform` 测试签名
-（`keystore/platform.p12`），与星愿适配版保持一致，无需额外配置即可编译。
-
-这是一套公开测试密钥，不提供私密性或生产环境的身份保证。请勿将其用作正式产品或
-私有系统的安全信任根。需要改用自己的签名时，可在用户级 `gradle.properties` 中覆盖：
-
-```properties
-HEY_PLATFORM_KEYSTORE=/absolute/path/to/platform.p12
-HEY_PLATFORM_STORE_PASSWORD=your_store_password
-HEY_PLATFORM_KEY_ALIAS=your_key_alias
-HEY_PLATFORM_KEY_PASSWORD=your_key_password
-```
-
-### 编译 APK
-
+### 2. 编译命令
 ```bash
+# 编译 Debug 版
 ./gradlew assembleDebug
+
+# 编译 Platform 签名的 Release 版
 ./gradlew assembleRelease
 ```
 
-主要输出位置：
-
+生成安装包输出路径：
 ```text
 app/build/outputs/apk/debug/app-debug.apk
-app/build/outputs/release-distribution/*.apk
+app/build/outputs/release-distribution/Hey-v*.apk
 ```
 
-### 安装
+### 3. CI/CD 自动构建
+项目已配置 GitHub Actions 自动化工作流（`.github/workflows/release.yml`）：
+- 只要在 Git 仓库推送形如 `v*` 的 Release 标签（例如 `git tag v1.5.3 && git push origin --tags`）；
+- GitHub 跑道会自动使用 JDK 17 和 Android SDK 36 完成编译、自动打包并使用 Platform 密钥签名，生成发布页面供直接下载。
 
-```bash
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
+---
 
-普通用户签名无法获得签名级或系统级权限。若目标系统要求平台签名、预装白名单或特权应用目录，需要按照该系统的合法集成方式完成部署。
-
-## 项目结构
+## 📂 项目结构
 
 ```text
 app/src/main/
+├── AndroidManifest.xml          # 核心权限、Activity、Service 与广播 Action 声明
 ├── java/com/kooo/hey/
-│   ├── audio/          # 录音、播放、音频焦点、路由和音量控制
-│   ├── audio/dsp/      # 滤波、频移和变声桥接
-│   ├── config/         # 本地配置及设备默认参数
-│   ├── log/            # 应用运行日志
-│   ├── ui/             # 主界面功能面板和自定义控件
-│   └── *.kt / *.java   # Activity、Service、Receiver 与快捷控制
-├── cpp/
-│   ├── voice_effect/   # JNI 变声处理
-│   └── soundtouch/     # SoundTouch 第三方音频处理库
+│   ├── MainActivity.kt          # 主控界面（双滑块、中央对讲按钮、扬声器通道切换）
+│   ├── DebugActivity.kt         # 底层音频测试与高级参数调试面板
+│   ├── HeyCommandReceiver.kt    # EVCC 与外部自动化广播指令调度中心
+│   ├── AppWakeupHelper.kt       # 跨版本多重协同前台唤醒工具
+│   ├── FloatingWindowService.kt # 快捷悬浮对讲窗服务
+│   ├── MusicPlaybackService.kt  # 后台媒体播放前台服务
+│   ├── audio/
+│   │   ├── HotkeyAccessibilityService.kt # 系统级无障碍按键监听服务
+│   │   ├── HotkeyManager.kt              # 方控按键时序判决与原车按键重放状态机
+│   │   ├── KeyNameHelper.kt              # 按键键值与名称映射
+│   │   ├── AudioEngine.kt                # 麦克风录音、实时增益与防啸叫引擎
+│   │   ├── AudioFocusHelper.kt           # 车载音频焦点管理
+│   │   ├── CarVolumeHelper.kt            # 车载音量组管理接口
+│   │   ├── EcarxWorkMode.kt              # 亿咖通/吉利 DSP 降噪与回声消除工作模式切换
+│   │   ├── MusicPlaybackController.kt    # 本地音效与音乐控制器
+│   │   └── MusicPlayerManager.kt         # 音频播放核心管理
+│   ├── config/AppConfig.kt      # 用户偏好设置持久化
+│   ├── log/AppLog.kt            # 运行时日志持久化与控制台输出
+│   └── ui/
+│       ├── KeyLearnDialog.kt    # 方控/蓝牙按键学习与手势录制弹窗
+│       ├── CountdownRingView.kt # 对讲环形倒计时动画自定义 View
+│       ├── GainSliderView.kt    # 麦克风增益与音量对称滑块控件
+│       └── MusicPlayerPanel.kt  # 本地音乐播放选择面板
 └── res/
-    ├── layout*/        # 自适应界面
-    ├── raw/            # 本地设备配置
-    └── values*/        # 主题、文字和尺寸资源
+    ├── layout/                  # 默认横竖屏自适应布局
+    ├── layout-sw800dp/          # 车机中大屏专属布局
+    ├── layout-sw1000dp/         # 车机超大横屏专属布局
+    ├── layout-sw1400dp/         # 超宽比例车机大屏布局
+    ├── xml/                     # 无障碍服务配置
+    └── values*/                 # 国际化字串、颜色、尺寸资源
 ```
 
-## 安全提示
+---
 
-请在安全、合法且不会影响驾驶的场景下使用。高增益和近距离声学回路可能产生突然的啸叫或过大音量；首次测试时请降低系统音量、远离扬声器，并随时准备停止输出。
+## ⚠️ 免责与安全声明
 
-## 参与贡献
+1. **行车安全第一**：请在确保行车安全、遵守当地法律法规且不影响周围交通参与者的前提下使用车外扩音。
+2. **声学防啸叫提示**：高麦克风增益在近距离声学回路下可能产生突然的声音反馈或啸叫；首次使用请先在安全停泊状态下从小增益开始测试。
+3. **平台签名**：本项目内置的标准测试签名仅供本地测试，不作为私有车机系统的商业生产凭证。
 
-欢迎通过 Issue 或 Pull Request 提交问题、适配和改进。提交代码前请确保：
+---
 
-- 不包含签名私钥、密码、令牌或其他敏感材料。
-- 不包含未经授权的专有 SDK、固件或逆向所得受限代码。
-- 新增第三方组件时同时注明来源、版权和许可证。
-- 提交内容可以按照本项目许可证进行分发。
+## 📄 开源许可证
 
-## 开源协议
-
-除特别注明的第三方组件外，Hey！自有代码采用 [GNU General Public License v3.0 or later](LICENSE)。
-
-这意味着你可以运行、研究、修改和分发本项目；如果向他人分发修改后的程序或 APK，需要同时按 GPLv3 提供对应源代码和相同的许可权利。
-
-`app/src/main/cpp/soundtouch/` 中的 SoundTouch 2.4.0 继续采用 LGPL-2.1-or-later。其他依赖保留各自的许可证。完整信息参见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 和 [LICENSES](LICENSES/)。
-
-Copyright (C) 2026 The Hey Authors
+本项目自有代码遵循 [GNU General Public License v3.0 or later (GPL-3.0-or-later)](LICENSE)。  
+Copyright (C) 2026 The Hey Authors.

@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-val appVersionName = "1.2.5"
+val appVersionName = "1.3.0"
 
 android {
     namespace = "com.kooo.hey"
@@ -12,7 +12,7 @@ android {
         applicationId = "com.kooo.hey"
         minSdk = 28
         targetSdk = 36
-        versionCode = 27
+        versionCode = 28
         versionName = appVersionName
 
     }

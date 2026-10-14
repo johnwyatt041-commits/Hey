@@ -1278,6 +1278,15 @@ class MainActivity : AppCompatActivity() {
 
         learnDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
+        learnDialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                return@setOnKeyListener false
+            }
+            capturedKeyCode = keyCode
+            updateDetectedKeyText()
+            true
+        }
+
         onKeyLearnedCallback = { keyCode ->
             capturedKeyCode = keyCode
             updateDetectedKeyText()

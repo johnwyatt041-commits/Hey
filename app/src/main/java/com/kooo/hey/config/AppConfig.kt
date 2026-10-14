@@ -301,6 +301,39 @@ class AppConfig(private val context: Context) {
             .apply()
     }
 
+    // ==================== Global Function Key Bindings ====================
+
+    /** Enable background hardware/bluetooth key monitoring via AccessibilityService. Default true. */
+    var enableBackgroundKeyMonitor: Boolean
+        get() = prefs.getBoolean(KEY_ENABLE_BG_KEY_MONITOR, true)
+        set(value) = prefs.edit().putBoolean(KEY_ENABLE_BG_KEY_MONITOR, value).apply()
+
+    var appSwitchKeyCode: Int
+        get() = prefs.getInt(KEY_APP_SWITCH_KEY, 0)
+        set(value) = prefs.edit().putInt(KEY_APP_SWITCH_KEY, value).apply()
+
+    var appSwitchGesture: Int
+        get() = prefs.getInt(KEY_APP_SWITCH_GESTURE, 0)
+        set(value) = prefs.edit().putInt(KEY_APP_SWITCH_GESTURE, value.coerceIn(0, 2)).apply()
+
+    fun clearAppSwitchKeyBinding() {
+        prefs.edit().remove(KEY_APP_SWITCH_KEY).remove(KEY_APP_SWITCH_GESTURE).apply()
+    }
+    fun clearAppSwitchKey() = clearAppSwitchKeyBinding()
+
+    var talkKeyCode: Int
+        get() = prefs.getInt(KEY_TALK_KEY, 0)
+        set(value) = prefs.edit().putInt(KEY_TALK_KEY, value).apply()
+
+    var talkGesture: Int
+        get() = prefs.getInt(KEY_TALK_GESTURE, 0)
+        set(value) = prefs.edit().putInt(KEY_TALK_GESTURE, value.coerceIn(0, 2)).apply()
+
+    fun clearTalkKeyBinding() {
+        prefs.edit().remove(KEY_TALK_KEY).remove(KEY_TALK_GESTURE).apply()
+    }
+    fun clearTalkKey() = clearTalkKeyBinding()
+
     // ==================== Visual ====================
 
     /** Ripple spawn threshold (smoothed level must exceed this to create a new ripple). Default 0.03. */
@@ -465,6 +498,12 @@ class AppConfig(private val context: Context) {
         const val DEFAULT_QUICK_SOUND_COUNT = 6
         const val MAX_QUICK_SOUNDS = 12
         const val MIN_QUICK_SOUNDS = 1
+
+        private const val KEY_ENABLE_BG_KEY_MONITOR = "enable_bg_key_monitor"
+        private const val KEY_APP_SWITCH_KEY = "app_switch_key"
+        private const val KEY_APP_SWITCH_GESTURE = "app_switch_gesture"
+        private const val KEY_TALK_KEY = "talk_key"
+        private const val KEY_TALK_GESTURE = "talk_gesture"
 
         private const val KEY_AUDIO_USAGE = "audio_usage_custom"  // keep old key for migration
         private const val KEY_OUTPUT_DEVICE = "output_device"

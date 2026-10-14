@@ -23,6 +23,9 @@ class HotkeyManager(
         private const val TAG = "HotkeyMgr"
         const val DOUBLE_CLICK_TIMEOUT_MS = 300L
         const val LONG_PRESS_TIMEOUT_MS = 500L
+
+        const val SLOT_APP_SWITCH = 1001
+        const val SLOT_TALK = 1002
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -53,10 +56,12 @@ class HotkeyManager(
     }
 
     /**
-     * Checks whether the given keyCode is bound to any quick sound slot.
+     * Checks whether the given keyCode is bound to any quick sound or function slot.
      */
     fun isKeyBound(keyCode: Int): Boolean {
         if (keyCode <= 0) return false
+        if (config.appSwitchKeyCode == keyCode) return true
+        if (config.talkKeyCode == keyCode) return true
         for (i in 0 until config.quickSoundCount) {
             if (config.getQuickSoundKeyCode(i) == keyCode) {
                 return true
@@ -66,10 +71,16 @@ class HotkeyManager(
     }
 
     /**
-     * Finds the quick sound index configured for the specified keyCode and gesture.
+     * Finds the slot configured for the specified keyCode and gesture.
      * Returns -1 if no matching slot is found.
      */
     private fun findSlot(keyCode: Int, gesture: Int): Int {
+        if (config.appSwitchKeyCode == keyCode && config.appSwitchGesture == gesture) {
+            return SLOT_APP_SWITCH
+        }
+        if (config.talkKeyCode == keyCode && config.talkGesture == gesture) {
+            return SLOT_TALK
+        }
         for (i in 0 until config.quickSoundCount) {
             if (config.getQuickSoundKeyCode(i) == keyCode && config.getQuickSoundGesture(i) == gesture) {
                 return i

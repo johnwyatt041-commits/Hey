@@ -48,11 +48,13 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import com.kooo.hey.audio.HotkeyAccessibilityService
 import com.kooo.hey.audio.HotkeyManager
 import com.kooo.hey.audio.KeyNameHelper
 import com.kooo.hey.audio.MusicPlaybackController
 import com.kooo.hey.audio.MusicPlayerManager
 import com.kooo.hey.ui.FolderPickerDialog
+import com.kooo.hey.ui.KeyLearnDialog
 import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -92,8 +94,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var carVolumeHelper: CarVolumeHelper
     private lateinit var musicPlayerPanel: MusicPlayerPanel
     private lateinit var hotkeyManager: HotkeyManager
-    private var activeKeyLearnDialog: AlertDialog? = null
-    private var onKeyLearnedCallback: ((keyCode: Int) -> Unit)? = null
 
     // ==================== State Machine ====================
     private enum class TalkState { IDLE, CHARGING, TALKING_COUNTDOWN, TALKING_CONTINUOUS, STOPPING }
@@ -180,6 +180,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            AppLog.i(TAG, "Notification permission granted")
+            HotkeyAccessibilityService.instance?.updateNotification()
+        } else {
+            AppLog.w(TAG, "Notification permission denied")
+        }
+    }
+
     // ==================== Lifecycle ====================
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -257,15 +268,22 @@ class MainActivity : AppCompatActivity() {
         setupGuideButton()
         setupMusicPlayerPanel()
         setupQuickButtons()
-        hotkeyManager = HotkeyManager(config) { index ->
-            runOnUiThread { handleQuickButtonClick(index) }
+        hotkeyManager = HotkeyManager(config) { slot ->
+            runOnUiThread {
+                when (slot) {
+                    HotkeyManager.SLOT_APP_SWITCH -> toggleAppForegroundBackground()
+                    HotkeyManager.SLOT_TALK -> toggleTalkState()
+                    else -> handleQuickButtonClick(slot)
+                }
+            }
         }
         LogcatTriggerService.syncWithConfig(this)
         if (config.enableFloatingWindow && Settings.canDrawOverlays(this)) startFloatingWindow()
         startIdleBreathing()
 
-        // Request microphone permission on startup
+        // Request permissions on startup
         requestMicrophonePermissionIfNeeded()
+        requestNotificationPermissionIfNeeded()
 
         // Show guide on first launch
         GuideOverlay.showIfFirstTime(binding.main)
@@ -282,6 +300,15 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         isInForeground = true
+        try {
+            val nm = getSystemService(NOTIFICATION_SERVICE) as? android.app.NotificationManager
+            nm?.cancel(2002) // HotkeyAccessibilityService.WAKEUP_NOTIFICATION_ID
+        } catch (_: Exception) {}
+
+        if (HotkeyAccessibilityService.isRunning) {
+            HotkeyAccessibilityService.instance?.updateNotification()
+        }
+
         // Sync gain and volume sliders (may have changed in DebugActivity)
         if (::config.isInitialized) {
             updateSpeakerDestinationUi()
@@ -292,6 +319,11 @@ class MainActivity : AppCompatActivity() {
         }
         AmpManager.acquire(this, AmpManager.SESSION_FOREGROUND)
         if (::audioEngine.isInitialized) audioEngine.onAppForeground()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isInForeground = false
     }
 
     override fun onStop() {
@@ -308,9 +340,6 @@ class MainActivity : AppCompatActivity() {
         instance = null
         AppLog.saveToPersistentLog(this)
         if (::hotkeyManager.isInitialized) hotkeyManager.reset()
-        activeKeyLearnDialog?.dismiss()
-        activeKeyLearnDialog = null
-        onKeyLearnedCallback = null
         handler.removeCallbacksAndMessages(null)
         countdownTimer?.cancel()
         btnColorAnimator?.cancel()
@@ -764,6 +793,33 @@ class MainActivity : AppCompatActivity() {
     val isTalking: Boolean
         get() = talkState == TalkState.TALKING_COUNTDOWN || talkState == TalkState.TALKING_CONTINUOUS
 
+    /** Toggle talk state: start if idle, stop if talking. */
+    fun toggleTalkState() {
+        runOnUiThread {
+            if (isTalking) {
+                stopTalking()
+            } else if (talkState == TalkState.IDLE) {
+                startTalkIfIdle()
+            }
+        }
+    }
+
+    /** Toggle between foreground and background. */
+    fun toggleAppForegroundBackground() {
+        runOnUiThread {
+            if (isInForeground) {
+                moveTaskToBack(true)
+            } else {
+                val intent = Intent(this, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                startActivity(intent)
+            }
+        }
+    }
+
     /** Stop talk from external caller without bringing activity to foreground. */
     fun requestStopTalking() {
         runOnUiThread {
@@ -1173,7 +1229,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnBindKey.setOnClickListener {
-            showLearnKeyDialog(selectedKeyCode, selectedGesture) { newCode, newGesture ->
+            KeyLearnDialog.show(this, selectedKeyCode, selectedGesture) { newCode, newGesture ->
                 selectedKeyCode = newCode
                 selectedGesture = newGesture
                 updateKeyDisplay()
@@ -1234,96 +1290,13 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun showLearnKeyDialog(
-        currentKeyCode: Int,
-        currentGesture: Int,
-        onConfirm: (keyCode: Int, gesture: Int) -> Unit
-    ) {
-        val learnView = layoutInflater.inflate(R.layout.dialog_learn_key, null)
-        val textDetectedKey = learnView.findViewById<TextView>(R.id.textDetectedKey)
-        val radioGroupGesture = learnView.findViewById<RadioGroup>(R.id.radioGroupGesture)
-        val rbSingle = learnView.findViewById<RadioButton>(R.id.rbGestureSingle)
-        val rbDouble = learnView.findViewById<RadioButton>(R.id.rbGestureDouble)
-        val rbLong = learnView.findViewById<RadioButton>(R.id.rbGestureLong)
-        val btnCancel = learnView.findViewById<TextView>(R.id.btnCancelLearn)
-        val btnConfirm = learnView.findViewById<TextView>(R.id.btnConfirmLearn)
-
-        when (currentGesture) {
-            KeyNameHelper.GESTURE_DOUBLE -> rbDouble.isChecked = true
-            KeyNameHelper.GESTURE_LONG -> rbLong.isChecked = true
-            else -> rbSingle.isChecked = true
-        }
-
-        var capturedKeyCode = if (currentKeyCode > 0) currentKeyCode else 0
-
-        fun updateDetectedKeyText() {
-            if (capturedKeyCode > 0) {
-                val name = KeyNameHelper.getKeyName(capturedKeyCode)
-                textDetectedKey.text = getString(R.string.quick_sound_detected_key, "$name (Code $capturedKeyCode)")
-                textDetectedKey.setTextColor(ContextCompat.getColor(this, R.color.green_ok))
-                btnConfirm.isEnabled = true
-                btnConfirm.alpha = 1.0f
-            } else {
-                textDetectedKey.text = getString(R.string.quick_sound_learn_hint)
-                textDetectedKey.setTextColor(ContextCompat.getColor(this, R.color.on_surface_muted))
-                btnConfirm.isEnabled = false
-                btnConfirm.alpha = 0.5f
-            }
-        }
-        updateDetectedKeyText()
-
-        val learnDialog = AlertDialog.Builder(this)
-            .setView(learnView)
-            .create()
-
-        learnDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        learnDialog.setOnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_BACK) {
-                return@setOnKeyListener false
-            }
-            capturedKeyCode = keyCode
-            updateDetectedKeyText()
-            true
-        }
-
-        onKeyLearnedCallback = { keyCode ->
-            capturedKeyCode = keyCode
-            updateDetectedKeyText()
-        }
-        activeKeyLearnDialog = learnDialog
-
-        learnDialog.setOnDismissListener {
-            activeKeyLearnDialog = null
-            onKeyLearnedCallback = null
-        }
-
-        btnCancel.setOnClickListener {
-            learnDialog.dismiss()
-        }
-
-        btnConfirm.setOnClickListener {
-            if (capturedKeyCode > 0) {
-                val gesture = when (radioGroupGesture.checkedRadioButtonId) {
-                    R.id.rbGestureDouble -> KeyNameHelper.GESTURE_DOUBLE
-                    R.id.rbGestureLong -> KeyNameHelper.GESTURE_LONG
-                    else -> KeyNameHelper.GESTURE_SINGLE
-                }
-                onConfirm(capturedKeyCode, gesture)
-                learnDialog.dismiss()
-            }
-        }
-
-        learnDialog.show()
-    }
-
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (activeKeyLearnDialog?.isShowing == true) {
+        if (KeyLearnDialog.isListening) {
             if (event.action == KeyEvent.ACTION_UP) {
                 if (event.keyCode == KeyEvent.KEYCODE_BACK) {
                     return super.dispatchKeyEvent(event)
                 }
-                onKeyLearnedCallback?.invoke(event.keyCode)
+                KeyLearnDialog.dispatchKey(event.keyCode)
                 return true
             }
             return true
@@ -1438,6 +1411,18 @@ class MainActivity : AppCompatActivity() {
             micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         } else {
             AppLog.i(TAG, "Microphone permission already granted")
+        }
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                AppLog.w(TAG, "Notification permission not granted, requesting...")
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                AppLog.i(TAG, "Notification permission already granted")
+            }
         }
     }
 

@@ -207,6 +207,225 @@
                 android:layout_marginBottom="20dp"
                 android:background="@color/debug_divider" />
 
+            <!-- Background Key Monitor toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="88dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bg_key_monitor_title"
+                        android:textColor="@color/on_surface"
+                        android:textSize="28sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/bg_key_monitor_desc"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/textAccessibilityStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/accessibility_status_disabled"
+                        android:textColor="@color/yellow_warn"
+                        android:textSize="21sp"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textNotificationPermissionStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="状态栏显示/通知: 未开启 ⚪ (点击去开启)"
+                        android:textColor="@color/yellow_warn"
+                        android:textSize="19sp"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp" />
+
+                    <TextView
+                        android:id="@+id/textOverlayPermissionStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="悬浮窗/后台弹出: 未开启 ⚪ (手机测试点击去开启)"
+                        android:textColor="@color/yellow_warn"
+                        android:textSize="19sp"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp" />
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/checkBgKeyMonitor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    app:thumbTint="@color/switch_thumb_tint"
+                    app:trackTint="@color/switch_track_tint" />
+            </LinearLayout>
+
+            <!-- App Switch Key Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_switch_key_title"
+                        android:textColor="@color/on_surface"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="@string/app_switch_key_desc"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/textAppSwitchKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/quick_sound_key_unbound"
+                        android:textColor="@color/on_surface_muted"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnUnbindAppSwitchKey"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:text="@string/quick_sound_btn_unbind"
+                    android:textColor="@color/on_surface_muted"
+                    android:textSize="21sp"
+                    android:visibility="gone"
+                    app:cornerRadius="30dp" />
+
+                <Button
+                    android:id="@+id/btnBindAppSwitchKey"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp"
+                    android:layout_marginStart="10dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:text="@string/quick_sound_btn_bind"
+                    android:textColor="@color/on_surface"
+                    android:textSize="21sp"
+                    app:cornerRadius="30dp" />
+            </LinearLayout>
+
+            <!-- Talk Key Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/talk_key_title"
+                        android:textColor="@color/on_surface"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="@string/talk_key_desc"
+                        android:textColor="@color/on_surface_dim"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/textTalkKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/quick_sound_key_unbound"
+                        android:textColor="@color/on_surface_muted"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnUnbindTalkKey"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:text="@string/quick_sound_btn_unbind"
+                    android:textColor="@color/on_surface_muted"
+                    android:textSize="21sp"
+                    android:visibility="gone"
+                    app:cornerRadius="30dp" />
+
+                <Button
+                    android:id="@+id/btnBindTalkKey"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp"
+                    android:layout_marginStart="10dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:text="@string/quick_sound_btn_bind"
+                    android:textColor="@color/on_surface"
+                    android:textSize="21sp"
+                    app:cornerRadius="30dp" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@color/debug_divider" />
+
             <!-- Launch action setting -->
             <LinearLayout
                 android:layout_width="match_parent"

@@ -13,6 +13,7 @@ import android.view.View
 import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -25,6 +26,10 @@ import com.kooo.hey.audio.AudioEngine
 import com.kooo.hey.audio.AudioUsageNames
 import com.kooo.hey.audio.CarVolumeHelper
 import com.kooo.hey.audio.EcarxWorkMode
+import com.kooo.hey.audio.HotkeyAccessibilityService
+import com.kooo.hey.audio.KeyNameHelper
+import com.kooo.hey.ui.KeyLearnDialog
+import android.view.KeyEvent
 import com.kooo.hey.config.AppConfig
 import com.kooo.hey.databinding.ActivityDebugBinding
 import com.kooo.hey.databinding.IncludeDebugLeftBinding
@@ -35,6 +40,13 @@ import java.util.Date
 import java.util.Locale
 
 class DebugActivity : AppCompatActivity() {
+
+    companion object {
+        @Volatile
+        var isForeground = false
+        @Volatile
+        var currentInstance: DebugActivity? = null
+    }
 
     private lateinit var binding: ActivityDebugBinding
     private lateinit var bindingLeft: IncludeDebugLeftBinding
@@ -85,6 +97,7 @@ class DebugActivity : AppCompatActivity() {
 
         loadConfigToUI()
         setupButtons()
+        setupHotkeySettings()
         setupAdbButtons()
         setupVolumeGroup()
         setupAmpControl()
@@ -96,18 +109,45 @@ class DebugActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        isForeground = true
+        currentInstance = this
         AmpManager.acquire(this, AmpManager.SESSION_FOREGROUND)
         audioEngine.onAppForeground()
+        updateAccessibilityStatus()
+        bindingLeft.checkBgKeyMonitor.isChecked = config.enableBackgroundKeyMonitor
+        updateKeyBindingViews()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isForeground = false
+        if (currentInstance == this) currentInstance = null
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (KeyLearnDialog.isListening) {
+            if (event.action == KeyEvent.ACTION_UP) {
+                if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+                    return super.dispatchKeyEvent(event)
+                }
+                KeyLearnDialog.dispatchKey(event.keyCode)
+                return true
+            }
+            return true
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onStop() {
         super.onStop()
+        isForeground = false
         AmpManager.release(this, AmpManager.SESSION_FOREGROUND)
         audioEngine.onAppBackground()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        if (currentInstance == this) currentInstance = null
         audioEngine.destroy()
         audioEngine.stopTestTone()
         carVolumeHelper.disconnect()
@@ -122,6 +162,9 @@ class DebugActivity : AppCompatActivity() {
         bindingLeft.layoutLogcatParams.visibility = if (config.enableLogcatTrigger) View.VISIBLE else View.GONE
         bindingLeft.checkFloatingWindow.isChecked = config.enableFloatingWindow
         bindingLeft.checkAutoTalkOnForeground.isChecked = config.enableAutoTalkOnForeground
+        bindingLeft.checkBgKeyMonitor.isChecked = config.enableBackgroundKeyMonitor
+        updateAccessibilityStatus()
+        updateKeyBindingViews()
         setupLaunchActionRadio()
 
         bindingLeft.seekFloatingSize.progress = config.floatingWindowSize - 32
@@ -170,6 +213,7 @@ class DebugActivity : AppCompatActivity() {
             config.logcatTriggerKeyword = bindingLeft.editLogcatKeyword.text.toString().trim()
             config.enableFloatingWindow = bindingLeft.checkFloatingWindow.isChecked
             config.enableAutoTalkOnForeground = bindingLeft.checkAutoTalkOnForeground.isChecked
+            config.enableBackgroundKeyMonitor = bindingLeft.checkBgKeyMonitor.isChecked
             config.floatingWindowSize = bindingLeft.seekFloatingSize.progress + 32
             config.floatingWindowAlpha = bindingLeft.seekFloatingAlpha.progress * 0.1f + 0.1f
             val musicFolder = bindingLeft.editMusicFolder.text.toString().trim()
@@ -333,6 +377,10 @@ class DebugActivity : AppCompatActivity() {
             audioEngine.liveLowPassCutoff = lp
         }
         bindingLeft.checkAutoTalkOnForeground.setOnCheckedChangeListener { _, _ -> saveConfigFromUI() }
+        bindingLeft.checkBgKeyMonitor.setOnCheckedChangeListener { _, _ ->
+            saveConfigFromUI()
+            HotkeyAccessibilityService.instance?.updateNotification()
+        }
         bindingLeft.checkFloatingWindow.setOnCheckedChangeListener { _, _ ->
             saveConfigFromUI()
             applyFloatingWindowConfig()
@@ -343,6 +391,140 @@ class DebugActivity : AppCompatActivity() {
             } else {
                 AppConfig.MUSIC_SPEAKER_EXTERNAL
             }
+        }
+    }
+
+    private fun setupHotkeySettings() {
+        bindingLeft.textAccessibilityStatus.setOnClickListener {
+            try {
+                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "无法打开系统无障碍设置", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        bindingLeft.textNotificationPermissionStatus.setOnClickListener {
+            try {
+                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+                } catch (_: Exception) {
+                    Toast.makeText(this, "无法打开通知设置", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        bindingLeft.textOverlayPermissionStatus.setOnClickListener {
+            var opened = false
+            try {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+                opened = true
+            } catch (_: Exception) {}
+
+            if (!opened) {
+                try {
+                    startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+                    opened = true
+                } catch (_: Exception) {}
+            }
+
+            if (!opened) {
+                try {
+                    startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+                } catch (_: Exception) {
+                    Toast.makeText(this, "无法打开权限设置", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        bindingLeft.btnBindAppSwitchKey.setOnClickListener {
+            KeyLearnDialog.show(this, config.appSwitchKeyCode, config.appSwitchGesture) { newCode, newGesture ->
+                config.appSwitchKeyCode = newCode
+                config.appSwitchGesture = newGesture
+                updateKeyBindingViews()
+            }
+        }
+
+        bindingLeft.btnUnbindAppSwitchKey.setOnClickListener {
+            config.clearAppSwitchKey()
+            updateKeyBindingViews()
+        }
+
+        bindingLeft.btnBindTalkKey.setOnClickListener {
+            KeyLearnDialog.show(this, config.talkKeyCode, config.talkGesture) { newCode, newGesture ->
+                config.talkKeyCode = newCode
+                config.talkGesture = newGesture
+                updateKeyBindingViews()
+            }
+        }
+
+        bindingLeft.btnUnbindTalkKey.setOnClickListener {
+            config.clearTalkKey()
+            updateKeyBindingViews()
+        }
+    }
+
+    private fun updateAccessibilityStatus() {
+        val isEnabled = HotkeyAccessibilityService.isServiceEnabled(this)
+        if (isEnabled) {
+            bindingLeft.textAccessibilityStatus.text = getString(R.string.accessibility_status_enabled)
+            bindingLeft.textAccessibilityStatus.setTextColor(ContextCompat.getColor(this, R.color.green_ok))
+        } else {
+            bindingLeft.textAccessibilityStatus.text = getString(R.string.accessibility_status_disabled)
+            bindingLeft.textAccessibilityStatus.setTextColor(ContextCompat.getColor(this, R.color.yellow_warn))
+        }
+
+        val hasNotification = NotificationManagerCompat.from(this).areNotificationsEnabled()
+        if (hasNotification) {
+            bindingLeft.textNotificationPermissionStatus.text = "状态栏显示/通知: 已开启 🟢"
+            bindingLeft.textNotificationPermissionStatus.setTextColor(ContextCompat.getColor(this, R.color.green_ok))
+        } else {
+            bindingLeft.textNotificationPermissionStatus.text = "状态栏显示/通知: 未开启 ⚪ (点击去开启)"
+            bindingLeft.textNotificationPermissionStatus.setTextColor(ContextCompat.getColor(this, R.color.yellow_warn))
+        }
+
+        val hasOverlay = Settings.canDrawOverlays(this)
+        if (hasOverlay) {
+            bindingLeft.textOverlayPermissionStatus.text = "悬浮窗/后台弹出: 已开启 🟢"
+            bindingLeft.textOverlayPermissionStatus.setTextColor(ContextCompat.getColor(this, R.color.green_ok))
+        } else {
+            bindingLeft.textOverlayPermissionStatus.text = "悬浮窗/后台弹出: 未开启 ⚪ (手机测试推荐开启)"
+            bindingLeft.textOverlayPermissionStatus.setTextColor(ContextCompat.getColor(this, R.color.yellow_warn))
+        }
+    }
+
+    private fun updateKeyBindingViews() {
+        val switchKey = config.appSwitchKeyCode
+        val switchGesture = config.appSwitchGesture
+        if (switchKey > 0) {
+            bindingLeft.textAppSwitchKey.text = KeyNameHelper.getBindingDescription(this, switchKey, switchGesture)
+            bindingLeft.textAppSwitchKey.setTextColor(ContextCompat.getColor(this, R.color.green_ok))
+            bindingLeft.btnUnbindAppSwitchKey.visibility = View.VISIBLE
+        } else {
+            bindingLeft.textAppSwitchKey.text = getString(R.string.quick_sound_key_unbound)
+            bindingLeft.textAppSwitchKey.setTextColor(ContextCompat.getColor(this, R.color.on_surface_muted))
+            bindingLeft.btnUnbindAppSwitchKey.visibility = View.GONE
+        }
+
+        val talkKey = config.talkKeyCode
+        val talkGesture = config.talkGesture
+        if (talkKey > 0) {
+            bindingLeft.textTalkKey.text = KeyNameHelper.getBindingDescription(this, talkKey, talkGesture)
+            bindingLeft.textTalkKey.setTextColor(ContextCompat.getColor(this, R.color.green_ok))
+            bindingLeft.btnUnbindTalkKey.visibility = View.VISIBLE
+        } else {
+            bindingLeft.textTalkKey.text = getString(R.string.quick_sound_key_unbound)
+            bindingLeft.textTalkKey.setTextColor(ContextCompat.getColor(this, R.color.on_surface_muted))
+            bindingLeft.btnUnbindTalkKey.visibility = View.GONE
         }
     }
 

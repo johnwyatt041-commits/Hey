@@ -80,7 +80,7 @@ class HotkeyAccessibilityService : AccessibilityService() {
         instance = this
         AppLog.i(TAG, "HotkeyAccessibilityService connected")
 
-        hotkeyManager = HotkeyManager(config) { slot ->
+        hotkeyManager = HotkeyManager(this, config) { slot ->
             handleSlotTriggered(slot)
         }
 
@@ -285,6 +285,11 @@ class HotkeyAccessibilityService : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        // If this event was replayed by Hey! to the vehicle, pass through directly
+        if (HotkeyManager.isReplaying) {
+            return false
+        }
+
         // If KeyLearnDialog is recording a key, intercept and consume to prevent default vehicle action
         if (KeyLearnDialog.isListening) {
             if (event.keyCode == KeyEvent.KEYCODE_BACK) {

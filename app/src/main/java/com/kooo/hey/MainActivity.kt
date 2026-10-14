@@ -271,7 +271,7 @@ class MainActivity : AppCompatActivity() {
         setupGuideButton()
         setupMusicPlayerPanel()
         setupQuickButtons()
-        hotkeyManager = HotkeyManager(config) { slot ->
+        hotkeyManager = HotkeyManager(this, config) { slot ->
             runOnUiThread {
                 when (slot) {
                     HotkeyManager.SLOT_APP_SWITCH -> toggleAppForegroundBackground()
@@ -1306,6 +1306,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (HotkeyManager.isReplaying) {
+            return super.dispatchKeyEvent(event)
+        }
+
         if (KeyLearnDialog.isListening) {
             if (event.action == KeyEvent.ACTION_UP) {
                 if (event.keyCode == KeyEvent.KEYCODE_BACK) {
@@ -1368,6 +1372,9 @@ class MainActivity : AppCompatActivity() {
                         mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
                     }
                     if (event != null) {
+                        if (HotkeyManager.isReplaying) {
+                            return false
+                        }
                         AppLog.i(TAG, "MainActivity MediaSession onMediaButtonEvent: keyCode=${event.keyCode}, action=${event.action}")
                         if (KeyLearnDialog.isListening) {
                             if (event.action == KeyEvent.ACTION_UP) {

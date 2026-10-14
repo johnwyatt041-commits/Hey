@@ -21,6 +21,7 @@ import com.kooo.hey.MainActivity
 import com.kooo.hey.R
 import com.kooo.hey.config.AppConfig
 import com.kooo.hey.log.AppLog
+import com.kooo.hey.ui.KeyLearnDialog
 import java.io.File
 
 /**
@@ -284,6 +285,18 @@ class HotkeyAccessibilityService : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        // If KeyLearnDialog is recording a key, intercept and consume to prevent default vehicle action
+        if (KeyLearnDialog.isListening) {
+            if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+                return false
+            }
+            if (event.action == KeyEvent.ACTION_UP) {
+                AppLog.i(TAG, "Captured key during learning in AccessibilityService: keyCode=${event.keyCode}")
+                KeyLearnDialog.dispatchKey(event.keyCode)
+            }
+            return true
+        }
+
         // If user paused the background monitor, pass through completely
         if (!config.enableBackgroundKeyMonitor) {
             return false

@@ -9,6 +9,8 @@ import android.content.pm.PackageManager
 import android.graphics.PorterDuff
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioDeviceInfo
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -94,6 +96,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var carVolumeHelper: CarVolumeHelper
     private lateinit var musicPlayerPanel: MusicPlayerPanel
     private lateinit var hotkeyManager: HotkeyManager
+    private var mediaSession: MediaSession? = null
 
     // ==================== State Machine ====================
     private enum class TalkState { IDLE, CHARGING, TALKING_COUNTDOWN, TALKING_CONTINUOUS, STOPPING }
@@ -277,6 +280,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        setupMediaSession()
         LogcatTriggerService.syncWithConfig(this)
         if (config.enableFloatingWindow && Settings.canDrawOverlays(this)) startFloatingWindow()
         startIdleBreathing()
@@ -319,11 +323,17 @@ class MainActivity : AppCompatActivity() {
         }
         AmpManager.acquire(this, AmpManager.SESSION_FOREGROUND)
         if (::audioEngine.isInitialized) audioEngine.onAppForeground()
+        try {
+            mediaSession?.isActive = true
+        } catch (_: Exception) {}
     }
 
     override fun onPause() {
         super.onPause()
         isInForeground = false
+        try {
+            mediaSession?.isActive = false
+        } catch (_: Exception) {}
     }
 
     override fun onStop() {
@@ -339,6 +349,11 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         instance = null
         AppLog.saveToPersistentLog(this)
+        try {
+            mediaSession?.isActive = false
+            mediaSession?.release()
+        } catch (_: Exception) {}
+        mediaSession = null
         if (::hotkeyManager.isInitialized) hotkeyManager.reset()
         handler.removeCallbacksAndMessages(null)
         countdownTimer?.cancel()
@@ -1322,6 +1337,55 @@ class MainActivity : AppCompatActivity() {
         }
 
         return super.dispatchKeyEvent(event)
+    }
+
+    private fun setupMediaSession() {
+        try {
+            val session = MediaSession(this, "Hey:MainSession")
+            @Suppress("DEPRECATION")
+            session.setFlags(
+                MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or
+                MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS
+            )
+            val playbackState = PlaybackState.Builder()
+                .setActions(
+                    PlaybackState.ACTION_PLAY or
+                    PlaybackState.ACTION_PAUSE or
+                    PlaybackState.ACTION_PLAY_PAUSE or
+                    PlaybackState.ACTION_SKIP_TO_NEXT or
+                    PlaybackState.ACTION_SKIP_TO_PREVIOUS or
+                    PlaybackState.ACTION_STOP
+                )
+                .setState(PlaybackState.STATE_PLAYING, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1.0f)
+                .build()
+            session.setPlaybackState(playbackState)
+            session.setCallback(object : MediaSession.Callback() {
+                override fun onMediaButtonEvent(mediaButtonIntent: Intent): Boolean {
+                    val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
+                    }
+                    if (event != null) {
+                        AppLog.i(TAG, "MainActivity MediaSession onMediaButtonEvent: keyCode=${event.keyCode}, action=${event.action}")
+                        if (KeyLearnDialog.isListening) {
+                            if (event.action == KeyEvent.ACTION_UP) {
+                                KeyLearnDialog.dispatchKey(event.keyCode)
+                            }
+                            return true
+                        }
+                        if (::hotkeyManager.isInitialized && hotkeyManager.handleKeyEvent(event)) {
+                            return true
+                        }
+                    }
+                    return super.onMediaButtonEvent(mediaButtonIntent)
+                }
+            }, handler)
+            mediaSession = session
+        } catch (e: Exception) {
+            AppLog.w(TAG, "Failed to initialize MediaSession in MainActivity", e)
+        }
     }
 
     private fun showTrackSelectionDialog(onSelected: (MusicPlayerManager.Track) -> Unit) {

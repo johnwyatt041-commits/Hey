@@ -12,16 +12,20 @@
     <dimen name="error_text_margin_top">3dp</dimen>
 
     <dimen name="func_row_margin_top">20dp</dimen>
-    <dimen name="func_button_size">39dp</dimen>
-    <dimen name="func_button_padding">8dp</dimen>
-    <dimen name="func_button_spacing">14dp</dimen>
-    <dimen name="func_label_text_size">9sp</dimen>
-    <dimen name="func_label_margin_top">2dp</dimen>
-    <dimen name="quick_button_label_max_width">50dp</dimen>
+    <dimen name="func_button_size">68dp</dimen>
+    <dimen name="func_button_padding">14dp</dimen>
+    <dimen name="func_button_spacing">16dp</dimen>
+    <dimen name="func_label_text_size">13sp</dimen>
+    <dimen name="func_label_margin_top">4dp</dimen>
+    <dimen name="quick_button_label_max_width">85dp</dimen>
 
-    <dimen name="gain_slider_width">39dp</dimen>
-    <dimen name="gain_slider_height">196dp</dimen>
-    <dimen name="gain_slider_margin_start">14dp</dimen>
+    <dimen name="speaker_dest_pill_height">42dp</dimen>
+    <dimen name="speaker_dest_pill_text_size">13sp</dimen>
+    <dimen name="speaker_dest_margin_top">18dp</dimen>
+
+    <dimen name="gain_slider_width">46dp</dimen>
+    <dimen name="gain_slider_height">210dp</dimen>
+    <dimen name="gain_slider_margin_start">16dp</dimen>
 
     <dimen name="corner_button_size">28dp</dimen>
     <dimen name="corner_button_margin">11dp</dimen>

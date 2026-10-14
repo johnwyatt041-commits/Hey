@@ -24,6 +24,17 @@
     <string name="quick_sound_default_2">快捷 2</string>
     <string name="quick_sound_default_3">快捷 3</string>
     <string name="quick_sound_default_4">快捷 4</string>
+    <string name="quick_sound_default_5">快捷 5</string>
+    <string name="quick_sound_default_6">快捷 6</string>
+    <string name="quick_sound_prefix">快捷</string>
+    <string name="quick_sound_add_button">添加按键</string>
+    <string name="quick_sound_delete_button">删除此按键</string>
+    <string name="quick_sound_delete_confirm">确定要删除此快捷按键吗？</string>
+    <string name="quick_sound_max_reached">最多添加 12 个快捷按键</string>
+    <string name="speaker_dest_external_short">📢 车外扬声器</string>
+    <string name="speaker_dest_cabin_short">🎵 车内音响</string>
+    <string name="speaker_dest_switched_external">通道已切换至：车外扬声器</string>
+    <string name="speaker_dest_switched_cabin">通道已切换至：车内音响</string>
     <string name="quick_sound_dialog_title">设置快捷按键</string>
     <string name="quick_sound_name_label">按键名称</string>
     <string name="quick_sound_name_hint">输入按键名称…</string>

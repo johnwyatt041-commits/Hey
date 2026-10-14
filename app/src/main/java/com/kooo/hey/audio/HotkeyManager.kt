@@ -57,7 +57,7 @@ class HotkeyManager(
      */
     fun isKeyBound(keyCode: Int): Boolean {
         if (keyCode <= 0) return false
-        for (i in 0 until 4) {
+        for (i in 0 until config.quickSoundCount) {
             if (config.getQuickSoundKeyCode(i) == keyCode) {
                 return true
             }
@@ -66,11 +66,11 @@ class HotkeyManager(
     }
 
     /**
-     * Finds the quick sound index (0..3) configured for the specified keyCode and gesture.
+     * Finds the quick sound index configured for the specified keyCode and gesture.
      * Returns -1 if no matching slot is found.
      */
     private fun findSlot(keyCode: Int, gesture: Int): Int {
-        for (i in 0 until 4) {
+        for (i in 0 until config.quickSoundCount) {
             if (config.getQuickSoundKeyCode(i) == keyCode && config.getQuickSoundGesture(i) == gesture) {
                 return i
             }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:layout_marginEnd="@dimen/func_button_spacing">
+
+    <ImageView
+        android:id="@+id/quickButtonItem"
+        android:layout_width="@dimen/func_button_size"
+        android:layout_height="@dimen/func_button_size"
+        android:background="@drawable/bg_func_button_ripple"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="@dimen/func_button_padding"
+        android:src="@drawable/ic_add"
+        android:tint="@color/ve_icon_tint" />
+
+    <TextView
+        android:id="@+id/quickButtonLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/func_label_margin_top"
+        android:maxWidth="@dimen/quick_button_label_max_width"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:textColor="@color/on_surface_muted"
+        android:textSize="@dimen/func_label_text_size" />
+</LinearLayout>

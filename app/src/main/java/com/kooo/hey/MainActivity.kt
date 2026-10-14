@@ -44,6 +44,7 @@ import android.graphics.Color
 import android.provider.Settings
 import android.view.KeyEvent
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -248,6 +249,7 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread { handleEngineUnexpectedStop(reason) }
         }
 
+        setupSpeakerDestinationToggle()
         setupGainSlider()
         setupMusicVolumeSlider()
         setupTalkButton()
@@ -282,6 +284,7 @@ class MainActivity : AppCompatActivity() {
         isInForeground = true
         // Sync gain and volume sliders (may have changed in DebugActivity)
         if (::config.isInitialized) {
+            updateSpeakerDestinationUi()
             binding.gainSlider.setGainRange(config.minGainLimit, config.maxGainLimit)
             binding.gainSlider.setGain(config.volumeGain)
             binding.musicVolumeSlider.setGain(config.musicVolume)
@@ -700,21 +703,13 @@ class MainActivity : AppCompatActivity() {
                 if (fromNewIntent) toggleDefaultAction()
                 else handler.post { toggleDefaultAction() }
             }
-            action == HeyCommandReceiver.ACTION_PLAY_QUICK_1 -> {
-                if (fromNewIntent) handleQuickButtonClick(0)
-                else handler.post { handleQuickButtonClick(0) }
-            }
-            action == HeyCommandReceiver.ACTION_PLAY_QUICK_2 -> {
-                if (fromNewIntent) handleQuickButtonClick(1)
-                else handler.post { handleQuickButtonClick(1) }
-            }
-            action == HeyCommandReceiver.ACTION_PLAY_QUICK_3 -> {
-                if (fromNewIntent) handleQuickButtonClick(2)
-                else handler.post { handleQuickButtonClick(2) }
-            }
-            action == HeyCommandReceiver.ACTION_PLAY_QUICK_4 -> {
-                if (fromNewIntent) handleQuickButtonClick(3)
-                else handler.post { handleQuickButtonClick(3) }
+            action?.startsWith(HeyCommandReceiver.ACTION_PLAY_QUICK_PREFIX) == true -> {
+                val indexStr = action.removePrefix(HeyCommandReceiver.ACTION_PLAY_QUICK_PREFIX)
+                val index = (indexStr.toIntOrNull() ?: 1) - 1
+                if (index in 0 until config.quickSoundCount) {
+                    if (fromNewIntent) handleQuickButtonClick(index)
+                    else handler.post { handleQuickButtonClick(index) }
+                }
             }
             isLauncherIntent(intent) -> {
                 if (config.enableAutoTalkOnForeground) {
@@ -858,6 +853,43 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ==================== Speaker Destination Switch ====================
+
+    private fun setupSpeakerDestinationToggle() {
+        binding.tabDestExternal.setOnClickListener {
+            if (config.musicSpeakerDestination != AppConfig.MUSIC_SPEAKER_EXTERNAL) {
+                config.musicSpeakerDestination = AppConfig.MUSIC_SPEAKER_EXTERNAL
+                updateSpeakerDestinationUi()
+                Toast.makeText(this, R.string.speaker_dest_switched_external, Toast.LENGTH_SHORT).show()
+            }
+        }
+        binding.tabDestCabin.setOnClickListener {
+            if (config.musicSpeakerDestination != AppConfig.MUSIC_SPEAKER_IN_CABIN) {
+                config.musicSpeakerDestination = AppConfig.MUSIC_SPEAKER_IN_CABIN
+                updateSpeakerDestinationUi()
+                Toast.makeText(this, R.string.speaker_dest_switched_cabin, Toast.LENGTH_SHORT).show()
+            }
+        }
+        updateSpeakerDestinationUi()
+    }
+
+    private fun updateSpeakerDestinationUi() {
+        val isExternal = config.musicSpeakerDestination == AppConfig.MUSIC_SPEAKER_EXTERNAL
+        if (isExternal) {
+            binding.tabDestExternal.setBackgroundResource(R.drawable.bg_speaker_toggle_active)
+            binding.tabDestExternal.setTextColor(ContextCompat.getColor(this, R.color.on_primary))
+
+            binding.tabDestCabin.background = null
+            binding.tabDestCabin.setTextColor(ContextCompat.getColor(this, R.color.on_surface_dim))
+        } else {
+            binding.tabDestCabin.setBackgroundResource(R.drawable.bg_speaker_toggle_active)
+            binding.tabDestCabin.setTextColor(ContextCompat.getColor(this, R.color.on_primary))
+
+            binding.tabDestExternal.background = null
+            binding.tabDestExternal.setTextColor(ContextCompat.getColor(this, R.color.on_surface_dim))
+        }
+    }
+
     // ==================== Settings ====================
 
     private fun setupSettingsButton() {
@@ -943,23 +975,6 @@ class MainActivity : AppCompatActivity() {
     // ==================== Quick Sound Buttons ====================
 
     private fun setupQuickButtons() {
-        val buttons = listOf(
-            binding.quickButton1,
-            binding.quickButton2,
-            binding.quickButton3,
-            binding.quickButton4
-        )
-
-        buttons.forEachIndexed { index, button ->
-            button.setOnClickListener {
-                handleQuickButtonClick(index)
-            }
-            button.setOnLongClickListener {
-                handleQuickButtonLongClick(index)
-                true
-            }
-        }
-
         val musicManager = MusicPlaybackController.get(this)
         musicManager.addPlayStateListener {
             runOnUiThread { updateQuickButtonsUi() }
@@ -968,7 +983,57 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread { updateQuickButtonsUi() }
         }
 
+        binding.btnAddQuickButton.setOnClickListener {
+            onAddQuickButtonClicked()
+        }
+        binding.btnAddQuickButtonIcon.setOnClickListener {
+            onAddQuickButtonClicked()
+        }
+
+        rebuildQuickButtons()
+    }
+
+    private fun onAddQuickButtonClicked() {
+        val permission = getStoragePermission()
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            requestStoragePermissionOrOpenMusic()
+            return
+        }
+        val newIndex = config.addQuickSound()
+        if (newIndex != -1) {
+            rebuildQuickButtons()
+            showQuickSoundSetupDialog(newIndex)
+        } else {
+            Toast.makeText(this, R.string.quick_sound_max_reached, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun rebuildQuickButtons() {
+        binding.quickButtonsContainer.removeAllViews()
+        val count = config.quickSoundCount
+        for (i in 0 until count) {
+            val itemView = layoutInflater.inflate(R.layout.item_quick_button, binding.quickButtonsContainer, false)
+            val btn = itemView.findViewById<ImageView>(R.id.quickButtonItem)
+            val label = itemView.findViewById<TextView>(R.id.quickButtonLabel)
+
+            btn.setOnClickListener {
+                handleQuickButtonClick(i)
+            }
+            btn.setOnLongClickListener {
+                handleQuickButtonLongClick(i)
+                true
+            }
+
+            itemView.tag = i
+            binding.quickButtonsContainer.addView(itemView)
+        }
+        updateAddButtonVisibility()
         updateQuickButtonsUi()
+    }
+
+    private fun updateAddButtonVisibility() {
+        val atMax = config.quickSoundCount >= AppConfig.MAX_QUICK_SOUNDS
+        binding.btnAddQuickButton.visibility = if (atMax) View.GONE else View.VISIBLE
     }
 
     fun updateQuickButtonsUi() {
@@ -976,16 +1041,15 @@ class MainActivity : AppCompatActivity() {
         val isPlaying = musicManager.isPlaying
         val currentPath = musicManager.currentTrack?.path
 
-        val buttonPairs = listOf(
-            Pair(binding.quickButton1, binding.quickButton1Label),
-            Pair(binding.quickButton2, binding.quickButton2Label),
-            Pair(binding.quickButton3, binding.quickButton3Label),
-            Pair(binding.quickButton4, binding.quickButton4Label)
-        )
+        val container = binding.quickButtonsContainer
+        val childCount = container.childCount
+        for (i in 0 until childCount) {
+            val itemView = container.getChildAt(i) ?: continue
+            val button = itemView.findViewById<ImageView>(R.id.quickButtonItem) ?: continue
+            val label = itemView.findViewById<TextView>(R.id.quickButtonLabel) ?: continue
 
-        buttonPairs.forEachIndexed { index, (button, label) ->
-            val name = config.getQuickSoundName(index)
-            val path = config.getQuickSoundPath(index)
+            val name = config.getQuickSoundName(i)
+            val path = config.getQuickSoundPath(i)
             label.text = name
 
             val isThisPlaying = isPlaying && path.isNotEmpty() && path == currentPath
@@ -1063,18 +1127,10 @@ class MainActivity : AppCompatActivity() {
         val textKeyBinding = dialogView.findViewById<TextView>(R.id.textKeyBinding)
         val btnUnbindKey = dialogView.findViewById<TextView>(R.id.btnUnbindKey)
         val btnBindKey = dialogView.findViewById<TextView>(R.id.btnBindKey)
-        val rgSpeakerDest = dialogView.findViewById<RadioGroup>(R.id.rgSpeakerDest)
-        val rbDestExternal = dialogView.findViewById<RadioButton>(R.id.rbDestExternal)
-        val rbDestCabin = dialogView.findViewById<RadioButton>(R.id.rbDestCabin)
         val btnClear = dialogView.findViewById<TextView>(R.id.btnClear)
+        val btnDelete = dialogView.findViewById<TextView>(R.id.btnDelete)
         val btnCancel = dialogView.findViewById<TextView>(R.id.btnCancel)
         val btnSave = dialogView.findViewById<TextView>(R.id.btnSave)
-
-        if (config.musicSpeakerDestination == AppConfig.MUSIC_SPEAKER_IN_CABIN) {
-            rbDestCabin.isChecked = true
-        } else {
-            rbDestExternal.isChecked = true
-        }
 
         titleView.text = getString(R.string.quick_sound_dialog_title) + " " + (index + 1)
         val currentName = config.getQuickSoundName(index)
@@ -1142,6 +1198,24 @@ class MainActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
+        if (config.quickSoundCount <= AppConfig.MIN_QUICK_SOUNDS) {
+            btnDelete.visibility = View.GONE
+        } else {
+            btnDelete.visibility = View.VISIBLE
+            btnDelete.setOnClickListener {
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.quick_sound_delete_button)
+                    .setMessage(R.string.quick_sound_delete_confirm)
+                    .setPositiveButton(R.string.quick_sound_delete_button) { _, _ ->
+                        config.removeQuickSoundAt(index)
+                        rebuildQuickButtons()
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton(R.string.permission_dialog_cancel, null)
+                    .show()
+            }
+        }
+
         btnCancel.setOnClickListener {
             dialog.dismiss()
         }
@@ -1153,11 +1227,6 @@ class MainActivity : AppCompatActivity() {
             config.setQuickSoundPath(index, selectedPath)
             config.setQuickSoundKeyCode(index, selectedKeyCode)
             config.setQuickSoundGesture(index, selectedGesture)
-            config.musicSpeakerDestination = if (rbDestCabin.isChecked) {
-                AppConfig.MUSIC_SPEAKER_IN_CABIN
-            } else {
-                AppConfig.MUSIC_SPEAKER_EXTERNAL
-            }
             updateQuickButtonsUi()
             dialog.dismiss()
         }
@@ -1323,12 +1392,13 @@ class MainActivity : AppCompatActivity() {
     private enum class CenterMode { TALK, MUSIC }
 
     private fun showCenterPanel(mode: CenterMode) {
-        // Hide the talk button circle area and function buttons
+        // Hide top speaker toggle, center talk button area and function buttons
+        binding.speakerDestToggle.visibility = View.INVISIBLE
         binding.talkButton.visibility = View.INVISIBLE
         binding.countdownRing.visibility = View.INVISIBLE
         binding.audioGlow.visibility = View.INVISIBLE
         binding.statusText.visibility = View.INVISIBLE
-        binding.functionButtonsRow.visibility = View.INVISIBLE
+        binding.functionButtonsScrollView.visibility = View.INVISIBLE
         binding.panelBackButton.apply {
             alpha = 0f
             translationX = -60f
@@ -1341,11 +1411,12 @@ class MainActivity : AppCompatActivity() {
     private fun restoreCenterCircle() {
         if (musicPlayerPanel.isVisible) return
 
+        binding.speakerDestToggle.visibility = View.VISIBLE
         binding.talkButton.visibility = View.VISIBLE
         binding.countdownRing.visibility = View.VISIBLE
         binding.audioGlow.visibility = View.VISIBLE
         binding.statusText.visibility = View.VISIBLE
-        binding.functionButtonsRow.visibility = View.VISIBLE
+        binding.functionButtonsScrollView.visibility = View.VISIBLE
         binding.panelBackButton.visibility = View.GONE
     }
 

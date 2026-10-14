@@ -153,41 +153,6 @@
             android:textSize="@dimen/dialog_button_size" />
     </LinearLayout>
 
-    <!-- Speaker Destination Section -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:text="@string/quick_sound_dest_label"
-        android:textColor="@color/on_surface_dim"
-        android:textSize="@dimen/dialog_body_size" />
-
-    <RadioGroup
-        android:id="@+id/rgSpeakerDest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:orientation="horizontal">
-
-        <RadioButton
-            android:id="@+id/rbDestExternal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/quick_sound_dest_external"
-            android:textColor="@color/on_surface"
-            android:textSize="@dimen/dialog_body_size" />
-
-        <RadioButton
-            android:id="@+id/rbDestCabin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/quick_sound_dest_cabin"
-            android:textColor="@color/on_surface"
-            android:textSize="@dimen/dialog_body_size" />
-    </RadioGroup>
-
     <!-- Dialog buttons row -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -209,6 +174,22 @@
             android:paddingBottom="8dp"
             android:text="@string/quick_sound_clear"
             android:textColor="@color/on_surface_muted"
+            android:textSize="@dimen/dialog_button_size" />
+
+        <TextView
+            android:id="@+id/btnDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_dialog_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingStart="14dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="8dp"
+            android:text="@string/quick_sound_delete_button"
+            android:textColor="@color/red_primary"
             android:textSize="@dimen/dialog_button_size" />
 
         <Space

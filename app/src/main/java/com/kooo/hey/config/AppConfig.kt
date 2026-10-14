@@ -196,14 +196,55 @@ class AppConfig(private val context: Context) {
 
     // ==================== Quick Sounds ====================
 
-    fun getQuickSoundName(index: Int): String {
-        val defaultRes = when (index) {
-            0 -> R.string.quick_sound_default_1
-            1 -> R.string.quick_sound_default_2
-            2 -> R.string.quick_sound_default_3
-            else -> R.string.quick_sound_default_4
+    /** Number of active quick sound buttons (1..12). Default 6. */
+    var quickSoundCount: Int
+        get() = prefs.getInt(KEY_QUICK_SOUND_COUNT, DEFAULT_QUICK_SOUND_COUNT).coerceIn(MIN_QUICK_SOUNDS, MAX_QUICK_SOUNDS)
+        set(value) = prefs.edit().putInt(KEY_QUICK_SOUND_COUNT, value.coerceIn(MIN_QUICK_SOUNDS, MAX_QUICK_SOUNDS)).apply()
+
+    fun addQuickSound(): Int {
+        val current = quickSoundCount
+        if (current >= MAX_QUICK_SOUNDS) return -1
+        val newIndex = current
+        quickSoundCount = current + 1
+        return newIndex
+    }
+
+    fun removeQuickSoundAt(index: Int): Boolean {
+        val current = quickSoundCount
+        if (current <= MIN_QUICK_SOUNDS || index !in 0 until current) return false
+        val editor = prefs.edit()
+        for (i in index until current - 1) {
+            val nextName = prefs.getString("quick_sound_name_${i + 1}", null)
+            val nextPath = prefs.getString("quick_sound_path_${i + 1}", null)
+            val nextKey = if (prefs.contains("quick_sound_key_${i + 1}")) prefs.getInt("quick_sound_key_${i + 1}", 0) else null
+            val nextGesture = if (prefs.contains("quick_sound_gesture_${i + 1}")) prefs.getInt("quick_sound_gesture_${i + 1}", 0) else null
+
+            if (nextName != null) editor.putString("quick_sound_name_$i", nextName) else editor.remove("quick_sound_name_$i")
+            if (nextPath != null) editor.putString("quick_sound_path_$i", nextPath) else editor.remove("quick_sound_path_$i")
+            if (nextKey != null) editor.putInt("quick_sound_key_$i", nextKey) else editor.remove("quick_sound_key_$i")
+            if (nextGesture != null) editor.putInt("quick_sound_gesture_$i", nextGesture) else editor.remove("quick_sound_gesture_$i")
         }
-        val defaultName = context.getString(defaultRes)
+        val last = current - 1
+        editor.remove("quick_sound_name_$last")
+        editor.remove("quick_sound_path_$last")
+        editor.remove("quick_sound_key_$last")
+        editor.remove("quick_sound_gesture_$last")
+
+        editor.putInt(KEY_QUICK_SOUND_COUNT, current - 1)
+        editor.apply()
+        return true
+    }
+
+    fun getQuickSoundName(index: Int): String {
+        val defaultName = when (index) {
+            0 -> context.getString(R.string.quick_sound_default_1)
+            1 -> context.getString(R.string.quick_sound_default_2)
+            2 -> context.getString(R.string.quick_sound_default_3)
+            3 -> context.getString(R.string.quick_sound_default_4)
+            4 -> context.getString(R.string.quick_sound_default_5)
+            5 -> context.getString(R.string.quick_sound_default_6)
+            else -> "${context.getString(R.string.quick_sound_prefix)} ${index + 1}"
+        }
         return prefs.getString("quick_sound_name_$index", defaultName) ?: defaultName
     }
 
@@ -220,13 +261,15 @@ class AppConfig(private val context: Context) {
     }
 
     fun clearQuickSound(index: Int) {
-        val defaultRes = when (index) {
-            0 -> R.string.quick_sound_default_1
-            1 -> R.string.quick_sound_default_2
-            2 -> R.string.quick_sound_default_3
-            else -> R.string.quick_sound_default_4
+        val defaultName = when (index) {
+            0 -> context.getString(R.string.quick_sound_default_1)
+            1 -> context.getString(R.string.quick_sound_default_2)
+            2 -> context.getString(R.string.quick_sound_default_3)
+            3 -> context.getString(R.string.quick_sound_default_4)
+            4 -> context.getString(R.string.quick_sound_default_5)
+            5 -> context.getString(R.string.quick_sound_default_6)
+            else -> "${context.getString(R.string.quick_sound_prefix)} ${index + 1}"
         }
-        val defaultName = context.getString(defaultRes)
         prefs.edit()
             .putString("quick_sound_name_$index", defaultName)
             .putString("quick_sound_path_$index", "")
@@ -417,6 +460,11 @@ class AppConfig(private val context: Context) {
 
     companion object {
         private const val PREFS_NAME = "hey_config"
+
+        private const val KEY_QUICK_SOUND_COUNT = "quick_sound_count"
+        const val DEFAULT_QUICK_SOUND_COUNT = 6
+        const val MAX_QUICK_SOUNDS = 12
+        const val MIN_QUICK_SOUNDS = 1
 
         private const val KEY_AUDIO_USAGE = "audio_usage_custom"  // keep old key for migration
         private const val KEY_OUTPUT_DEVICE = "output_device"

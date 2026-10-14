@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Optimized layout for sw800dp screens (e.g. 2560x1600 @ 320dpi). -->
+    <dimen name="audio_glow_size">380dp</dimen>
+    <dimen name="countdown_ring_size">200dp</dimen>
+    <dimen name="talk_button_size">175dp</dimen>
+    <dimen name="mic_icon_size">60dp</dimen>
+
+    <dimen name="status_text_size">12sp</dimen>
+    <dimen name="status_text_margin_top">14dp</dimen>
+    <dimen name="error_text_size">10sp</dimen>
+    <dimen name="error_text_margin_top">4dp</dimen>
+
+    <dimen name="func_row_margin_top">30dp</dimen>
+    <dimen name="func_button_size">78dp</dimen>
+    <dimen name="func_button_padding">16dp</dimen>
+    <dimen name="func_button_spacing">20dp</dimen>
+    <dimen name="func_label_text_size">14sp</dimen>
+    <dimen name="func_label_margin_top">4dp</dimen>
+    <dimen name="quick_button_label_max_width">95dp</dimen>
+
+    <dimen name="speaker_dest_pill_height">46dp</dimen>
+    <dimen name="speaker_dest_pill_text_size">14sp</dimen>
+    <dimen name="speaker_dest_margin_top">22dp</dimen>
+
+    <dimen name="gain_slider_width">50dp</dimen>
+    <dimen name="gain_slider_height">260dp</dimen>
+    <dimen name="gain_slider_margin_start">20dp</dimen>
+
+    <dimen name="corner_button_size">32dp</dimen>
+    <dimen name="corner_button_margin">14dp</dimen>
+    <dimen name="corner_button_padding">7dp</dimen>
+    <dimen name="guide_text_size">16sp</dimen>
+
+    <dimen name="ve_panel_width">420dp</dimen>
+    <dimen name="panel_width">350dp</dimen>
+    <dimen name="panel_margin_bottom">38dp</dimen>
+    <dimen name="panel_content_padding">18dp</dimen>
+    <dimen name="panel_title_text_size">18sp</dimen>
+    <dimen name="ve_panel_margin_bottom">11dp</dimen>
+
+    <dimen name="back_button_padding">12dp</dimen>
+    <dimen name="back_button_margin_end">22dp</dimen>
+
+    <dimen name="music_info_text_size">13sp</dimen>
+    <dimen name="music_info_margin_top">7dp</dimen>
+    <dimen name="music_seekbar_margin_top">4dp</dimen>
+    <dimen name="music_time_text_size">12sp</dimen>
+    <dimen name="music_transport_margin_top">7dp</dimen>
+    <dimen name="music_transport_button_size">44dp</dimen>
+    <dimen name="music_transport_padding">9dp</dimen>
+    <dimen name="music_play_button_size">52dp</dimen>
+    <dimen name="music_play_button_margin">22dp</dimen>
+    <dimen name="music_play_button_padding">10dp</dimen>
+    <dimen name="music_mode_button_size">34dp</dimen>
+    <dimen name="music_mode_padding">9dp</dimen>
+    <dimen name="music_playlist_margin_top">12dp</dimen>
+
+    <dimen name="dialog_width">280dp</dimen>
+    <dimen name="dialog_folder_width">340dp</dimen>
+    <dimen name="dialog_title_size">15sp</dimen>
+    <dimen name="dialog_input_size">13sp</dimen>
+    <dimen name="dialog_button_size">13sp</dimen>
+    <dimen name="dialog_body_size">13sp</dimen>
+
+    <dimen name="music_item_text_size">13sp</dimen>
+    <dimen name="music_item_index_text_size">12sp</dimen>
+    <dimen name="music_item_margin_bottom">5dp</dimen>
+    <dimen name="music_item_padding_h">11dp</dimen>
+    <dimen name="music_item_padding_v">7dp</dimen>
+    <dimen name="music_item_index_width">22dp</dimen>
+</resources>

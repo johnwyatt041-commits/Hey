@@ -80,18 +80,20 @@ class MusicPlayerPanel(
         })
 
         musicManager.onTrackChanged = { track, index ->
-            nowPlayingText.text = track.name
-            rebuildPlaylist()
+            if (!musicManager.isOneShotPlayback) {
+                nowPlayingText.text = track.name
+                rebuildPlaylist()
+            }
         }
         musicManager.onProgress = { currentMs, totalMs ->
-            if (!isSeeking && totalMs > 0) {
+            if (!isSeeking && totalMs > 0 && !musicManager.isOneShotPlayback) {
                 seekBar.progress = (currentMs.toLong() * 1000 / totalMs).toInt()
                 currentTimeText.text = formatTime(currentMs)
                 totalTimeText.text = formatTime(totalMs)
             }
         }
         musicManager.onPlayStateChanged = { playing ->
-            playPauseButton.setImageResource(if (playing) R.drawable.ic_pause else R.drawable.ic_play)
+            playPauseButton.setImageResource(if (playing && !musicManager.isOneShotPlayback) R.drawable.ic_pause else R.drawable.ic_play)
         }
         musicManager.onComplete = {
             // Completion logic now handled inside MusicPlayerManager based on playMode
@@ -133,7 +135,7 @@ class MusicPlayerPanel(
         val res = ctx.resources
 
         musicManager.playlist.forEachIndexed { index, track ->
-            val isCurrent = index == musicManager.currentIndex
+            val isCurrent = !musicManager.isOneShotPlayback && index == musicManager.currentIndex
             val pH = res.getDimensionPixelSize(R.dimen.music_item_padding_h)
             val pV = res.getDimensionPixelSize(R.dimen.music_item_padding_v)
             val row = LinearLayout(ctx).apply {
@@ -298,9 +300,9 @@ class MusicPlayerPanel(
     }
 
     private fun updateCurrentPlaybackUi() {
-        val track = musicManager.playlist.getOrNull(musicManager.currentIndex)
+        val track = if (musicManager.isOneShotPlayback) null else musicManager.playlist.getOrNull(musicManager.currentIndex)
         nowPlayingText.text = track?.name ?: ctx.getString(R.string.music_no_track)
-        playPauseButton.setImageResource(if (musicManager.isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
+        playPauseButton.setImageResource(if (musicManager.isPlaying && !musicManager.isOneShotPlayback) R.drawable.ic_pause else R.drawable.ic_play)
         rebuildPlaylist()
     }
 }

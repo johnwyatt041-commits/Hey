@@ -49,6 +49,10 @@ class MusicPlayerManager(private val context: Context) {
     var isPlaying: Boolean = false
         private set
 
+    /** True if currently playing a one-shot track (e.g. quick sound) that must not auto-advance or loop. */
+    var isOneShotPlayback: Boolean = false
+        private set
+
     var currentTrack: Track? = null
         private set
 
@@ -135,22 +139,27 @@ class MusicPlayerManager(private val context: Context) {
      */
     fun play(index: Int) {
         if (index < 0 || index >= playlist.size) return
+        isOneShotPlayback = false
         currentIndex = index
         val track = playlist[index]
         playTrackInternal(track)
     }
 
     /**
-     * Play a track directly by file path.
+     * Play a track directly by file path (e.g. quick sound).
+     * Defaults to one-shot playback so it stops when finished and never loops/auto-advances.
      */
-    fun playPath(path: String, title: String? = null) {
+    fun playPath(path: String, title: String? = null, isOneShot: Boolean = true) {
         val file = File(path)
         if (!file.exists()) {
             AppLog.w(TAG, "File not found: $path")
             return
         }
         val track = Track(title ?: file.nameWithoutExtension, file.absolutePath)
-        currentIndex = playlist.indexOfFirst { it.path == file.absolutePath }
+        isOneShotPlayback = isOneShot
+        if (!isOneShot) {
+            currentIndex = playlist.indexOfFirst { it.path == file.absolutePath }
+        }
         playTrackInternal(track)
     }
 
@@ -196,7 +205,9 @@ class MusicPlayerManager(private val context: Context) {
                 prepare()
                 val vol = appConfig.musicVolume.coerceIn(0f, 1f)
                 setVolume(vol, vol)
-                setOnCompletionListener { handleTrackCompletion() }
+                setOnCompletionListener {
+                    handler.post { handleTrackCompletion() }
+                }
                 lastPlayStartTime = System.currentTimeMillis()
                 start()
             }
@@ -253,23 +264,23 @@ class MusicPlayerManager(private val context: Context) {
     }
 
     private fun handleTrackCompletion() {
+        if (isOneShotPlayback) {
+            AppLog.i(TAG, "One-shot playback completed for ${currentTrack?.name}, stopping cleanly")
+            stop()
+            onComplete?.invoke()
+            return
+        }
+
         val elapsed = System.currentTimeMillis() - lastPlayStartTime
         if (elapsed < 2000) {
             AppLog.w(TAG, "Track completed too quickly (${elapsed}ms), stopping to prevent loop")
-            isPlaying = false
-            currentTrack = null
-            AmpManager.release(ctx, "music")
-            stopPlaybackService()
-            notifyPlayState(false)
+            stop()
+            onComplete?.invoke()
             return
         }
         when (playMode) {
             PlayMode.SINGLE -> {
-                isPlaying = false
-                currentTrack = null
-                AmpManager.release(ctx, "music")
-                stopPlaybackService()
-                notifyPlayState(false)
+                stop()
                 onComplete?.invoke()
             }
             PlayMode.LIST_LOOP -> {
@@ -338,12 +349,14 @@ class MusicPlayerManager(private val context: Context) {
 
     fun playNext() {
         if (playlist.isEmpty()) return
+        isOneShotPlayback = false
         val next = if (currentIndex + 1 >= playlist.size) 0 else currentIndex + 1
         play(next)
     }
 
     fun playPrevious() {
         if (playlist.isEmpty()) return
+        isOneShotPlayback = false
         val prev = if (currentIndex - 1 < 0) playlist.size - 1 else currentIndex - 1
         play(prev)
     }
@@ -369,6 +382,7 @@ class MusicPlayerManager(private val context: Context) {
             isPlaying = false
         }
         currentTrack = null
+        isOneShotPlayback = false
         stopPlaybackService()
         notifyPlayState(false)
     }

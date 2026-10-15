@@ -86,7 +86,7 @@ class HeyCommandReceiver : BroadcastReceiver() {
             main.runOnUiThread { main.toggleTalkState() }
         } else {
             val intent = Intent(context, MainActivity::class.java).apply {
-                action = FloatingWindowService.ACTION_TOGGLE_TALK
+                action = ACTION_TOGGLE_TALK
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
@@ -104,7 +104,7 @@ class HeyCommandReceiver : BroadcastReceiver() {
             main.runOnUiThread { main.toggleTalkState() }
         } else {
             val intent = Intent(context, MainActivity::class.java).apply {
-                action = FloatingWindowService.ACTION_START_TALK
+                action = ACTION_START_TALK
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or

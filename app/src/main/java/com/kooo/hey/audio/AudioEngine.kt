@@ -39,11 +39,6 @@ class AudioEngine(private val context: Context) {
     private var currentAudioSource: Int = -1
     private var currentEffectiveUsage: Int = -1
 
-    /** app_process child for system-only AudioSource (HOTWORD etc.), launched via ADB root + TCP */
-    private var hotwordProcess: Process? = null
-    private var hotwordInputStream: java.io.InputStream? = null
-    private var hotwordSocket: java.net.Socket? = null
-    private var hotwordAdbHelper: com.kooo.hey.AdbPermissionHelper? = null
 
     /** Live gain multiplier – can be changed while running, takes effect immediately. */
     @Volatile
@@ -164,26 +159,6 @@ class AudioEngine(private val context: Context) {
             return
         }
 
-        // For system audio sources (>= 1997), the entire start flow must run on a
-        // background thread because it involves TCP sockets (NetworkOnMainThreadException)
-        // and waiting for adb root + app_process child.
-        val needsHotwordPipe = (inputDevice == null && audioSource >= 1997)
-        if (needsHotwordPipe && Looper.myLooper() == Looper.getMainLooper()) {
-            Thread({
-                start(
-                    audioUsage = audioUsage, outputDevice = outputDevice,
-                    inputDevice = inputDevice, audioSource = audioSource,
-                    volumeGain = volumeGain, enableNoiseGate = enableNoiseGate,
-                    noiseGateStrength = noiseGateStrength, enableAgc = enableAgc, enableReverb = enableReverb,
-                    reverbMix = reverbMix, enableHighPass = enableHighPass,
-                    highPassCutoff = highPassCutoff, enableLowPass = enableLowPass,
-                    lowPassCutoff = lowPassCutoff, enableFreqShift = enableFreqShift,
-                    freqShiftHz = freqShiftHz, dspMode = dspMode,
-                )
-            }, "Hey-HotwordStart").start()
-            return
-        }
-
         if (isDraining.get()) {
             stopDrainThread()
             log("  停止 drain，复用已有 AudioRecord")
@@ -218,111 +193,43 @@ class AudioEngine(private val context: Context) {
                 0 -> "DEFAULT"; 1 -> "MIC"; 5 -> "CAMCORDER"
                 6 -> "VOICE_RECOGNITION"; 7 -> "VOICE_COMMUNICATION"
                 9 -> "UNPROCESSED"; 10 -> "VOICE_PERFORMANCE"
-                1997 -> "ECHO_REFERENCE"; 1998 -> "RADIO_TUNER"; 1999 -> "HOTWORD"
                 else -> "SOURCE_$effectiveSource"
             }
             log("AudioRecord 源: $srcName ($effectiveSource)")
 
-            val useHotwordPipe = effectiveSource >= 1997
-            val record: AudioRecord?
-
-            if (useHotwordPipe) {
-                // System-only source: launch via ADB root + TCP socket
-                // Requires: user has run `adb root` so adbd runs as root (UID 0)
-                stopHotwordProcess()
-                audioRecord?.let { try { it.release() } catch (_: Exception) {} }
-                audioRecord = null
-
-                val apkPath = context.applicationInfo.sourceDir
-
-                // Already on background thread (redirected at top of start()).
-                // Step 1: ensure adbd runs as root
-                val rootLatch = java.util.concurrent.CountDownLatch(1)
-                var rootOk = false
-                val rootAdb = com.kooo.hey.AdbPermissionHelper(context)
-                rootAdb.ensureRootAsync(object : com.kooo.hey.AdbPermissionHelper.Callback {
-                    override fun onLog(message: String) {
-                        if (message.isNotBlank()) log("  [root] $message")
-                    }
-                    override fun onComplete(allSuccess: Boolean) {
-                        rootOk = allSuccess
-                        rootLatch.countDown()
-                    }
-                })
-                if (!rootLatch.await(20, java.util.concurrent.TimeUnit.SECONDS) || !rootOk) {
-                    logError("adb root 失败，无法获取 HOTWORD 权限")
+            val record: AudioRecord
+            val existingRecord = audioRecord
+            if (existingRecord != null
+                && currentAudioSource == effectiveSource
+                && existingRecord.state == AudioRecord.STATE_INITIALIZED) {
+                record = existingRecord
+                log("✓ 复用 AudioRecord ($srcName, ${SAMPLE_RATE}Hz, mono, 16bit)" +
+                    ", recordingState=${record.recordingState}" +
+                    ", routedDevice=${record.routedDevice?.let { "id=${it.id},type=${it.type},addr=${it.address}" } ?: "null"}")
+            } else {
+                if (existingRecord != null) {
+                    log("  旧 AudioRecord 不兼容: state=${existingRecord.state}, src=$currentAudioSource→$effectiveSource, 重新创建")
+                }
+                existingRecord?.let { try { it.release() } catch (_: Exception) {} }
+                val newRecord = AudioRecord(
+                    effectiveSource,
+                    SAMPLE_RATE, CHANNEL_IN, ENCODING, bufferSize * 2
+                )
+                if (newRecord.state != AudioRecord.STATE_INITIALIZED) {
+                    logError("AudioRecord 初始化失败, state=${newRecord.state}, source=$srcName")
+                    newRecord.release()
                     return
                 }
-
-                // Step 2: open TCP server socket
-                val serverSocket = java.net.ServerSocket(0)
-                serverSocket.soTimeout = 12000
-                val port = serverSocket.localPort
-                log("启动 app_process 管道 (root): source=$srcName, TCP:$port")
-
-                val shellCmd = "export CLASSPATH='$apkPath'; " +
-                    "exec app_process /system/bin " +
-                    "com.kooo.hey.audio.HotwordMicWorker stream $effectiveSource $SAMPLE_RATE $port"
-
-                // Step 3: launch app_process via ADB (now as root)
-                val adb = com.kooo.hey.AdbPermissionHelper(context)
-                hotwordAdbHelper = adb
-                adb.executeShellCommandAsync(shellCmd, 600_000, object : com.kooo.hey.AdbPermissionHelper.Callback {
-                    override fun onLog(message: String) {
-                        if (message.isNotBlank()) log("  [hotword] $message")
-                    }
-                    override fun onComplete(allSuccess: Boolean) {
-                        log("  [hotword] 进程结束")
-                    }
-                })
-
-                // Step 4: accept TCP connection from child
-                val clientSocket = serverSocket.accept()
-                clientSocket.tcpNoDelay = true
-                hotwordSocket = clientSocket
-                hotwordInputStream = clientSocket.getInputStream()
-                serverSocket.close()
-                log("✓ app_process 管道已建立 ($srcName → TCP:$port → PCM16LE mono ${SAMPLE_RATE}Hz)")
-
-                record = null
+                record = newRecord
+                audioRecord = record
                 currentAudioSource = effectiveSource
-            } else {
-                // Normal source: use local AudioRecord
-                stopHotwordProcess()
+                log("✓ AudioRecord 初始化成功 ($srcName, ${SAMPLE_RATE}Hz, mono, 16bit)")
+            }
 
-                val existingRecord = audioRecord
-                if (existingRecord != null
-                    && currentAudioSource == effectiveSource
-                    && existingRecord.state == AudioRecord.STATE_INITIALIZED) {
-                    record = existingRecord
-                    log("✓ 复用 AudioRecord ($srcName, ${SAMPLE_RATE}Hz, mono, 16bit)" +
-                        ", recordingState=${record.recordingState}" +
-                        ", routedDevice=${record.routedDevice?.let { "id=${it.id},type=${it.type},addr=${it.address}" } ?: "null"}")
-                } else {
-                    if (existingRecord != null) {
-                        log("  旧 AudioRecord 不兼容: state=${existingRecord.state}, src=$currentAudioSource→$effectiveSource, 重新创建")
-                    }
-                    existingRecord?.let { try { it.release() } catch (_: Exception) {} }
-                    val newRecord = AudioRecord(
-                        effectiveSource,
-                        SAMPLE_RATE, CHANNEL_IN, ENCODING, bufferSize * 2
-                    )
-                    if (newRecord.state != AudioRecord.STATE_INITIALIZED) {
-                        logError("AudioRecord 初始化失败, state=${newRecord.state}, source=$srcName")
-                        newRecord.release()
-                        return
-                    }
-                    record = newRecord
-                    audioRecord = record
-                    currentAudioSource = effectiveSource
-                    log("✓ AudioRecord 初始化成功 ($srcName, ${SAMPLE_RATE}Hz, mono, 16bit)")
-                }
-
-                // Set preferred input device (microphone)
-                inputDevice?.let { device ->
-                    val ok = record.setPreferredDevice(device)
-                    log("  输入设备: setPreferredDevice(id=${device.id}, addr=${device.address}): $ok")
-                }
+            // Set preferred input device (microphone)
+            inputDevice?.let { device ->
+                val ok = record.setPreferredDevice(device)
+                log("  输入设备: setPreferredDevice(id=${device.id}, addr=${device.address}): $ok")
             }
 
             // ---- AudioTrack ----
@@ -375,15 +282,13 @@ class AudioEngine(private val context: Context) {
                 log("  路由设备: 未知 (可能在播放后才确定)")
             }
 
-            // Start recording (only for local AudioRecord, not hotword pipe)
-            if (!useHotwordPipe && record != null) {
-                record.startRecording()
-                if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
-                    logError("AudioRecord.startRecording() 失败! recordingState=${record.recordingState}, state=${record.state}")
-                }
-                log("✓ AudioRecord 开始录音, recordingState=${record.recordingState}" +
-                    ", routedDevice=${record.routedDevice?.let { "id=${it.id},type=${it.type},addr=${it.address}" } ?: "null"}")
+            // Start recording
+            record.startRecording()
+            if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+                logError("AudioRecord.startRecording() 失败! recordingState=${record.recordingState}, state=${record.state}")
             }
+            log("✓ AudioRecord 开始录音, recordingState=${record.recordingState}" +
+                ", routedDevice=${record.routedDevice?.let { "id=${it.id},type=${it.type},addr=${it.address}" } ?: "null"}")
 
             track.play()
             log("✓ AudioTrack 开始播放, playState=${track.playState}")
@@ -414,7 +319,6 @@ class AudioEngine(private val context: Context) {
                 2 -> "回声消除"
                 else -> "关"
             }
-            val pipeInputStream = hotwordInputStream  // capture for thread
             streamThread = Thread({
                 // Bandpass filters (always created; bypass controlled by volatile)
                 val highPassFilter = HighPassFilter(SAMPLE_RATE, liveHighPassCutoff.toFloat())
@@ -426,7 +330,7 @@ class AudioEngine(private val context: Context) {
                 val freqShifter = FrequencyShifter(SAMPLE_RATE, liveFreqShiftHz)
                 var lastShiftHz = liveFreqShiftHz
 
-                val inputMode = if (useHotwordPipe) "PIPE($srcName)" else "AudioRecord($srcName)"
+                val inputMode = "AudioRecord($srcName)"
                 val bpEnabled = liveBandpassEnabled
                 log("音频流线程启动 [$inputMode] (gain=${liveGain}x, AGC=${if (useAgc) "开" else "关"}, " +
                     "带通=${if (bpEnabled) "开(${liveHighPassCutoff}~${liveLowPassCutoff}Hz)" else "关"}, " +
@@ -435,7 +339,6 @@ class AudioEngine(private val context: Context) {
                     "混响=${if (useReverb) "开(${wetMix})" else "关"}, " +
                     "DSP=$dspLabel)")
                 val buffer = ShortArray(bufferSize / 2)
-                val pipeByteBuffer = if (useHotwordPipe) ByteArray(buffer.size * 2) else null
                 val micFloat = FloatArray(buffer.size)
 
                 var totalFrames = 0L
@@ -464,25 +367,7 @@ class AudioEngine(private val context: Context) {
                 val fb1 = 0.35f; val fb2 = 0.30f; val fb3 = 0.25f  // feedback (decay speed)
 
                 while (isRunning.get()) {
-                    val read = if (useHotwordPipe && pipeInputStream != null && pipeByteBuffer != null) {
-                        // Read PCM16LE bytes from pipe and convert to short[]
-                        val bytesNeeded = buffer.size * 2
-                        var totalRead = 0
-                        while (totalRead < bytesNeeded) {
-                            val n = pipeInputStream.read(pipeByteBuffer, totalRead, bytesNeeded - totalRead)
-                            if (n <= 0) break
-                            totalRead += n
-                        }
-                        val samples = totalRead / 2
-                        for (i in 0 until samples) {
-                            val lo = pipeByteBuffer[i * 2].toInt() and 0xFF
-                            val hi = pipeByteBuffer[i * 2 + 1].toInt()
-                            buffer[i] = ((hi shl 8) or lo).toShort()
-                        }
-                        samples
-                    } else {
-                        audioRecord?.read(buffer, 0, buffer.size) ?: -1
-                    }
+                    val read = audioRecord?.read(buffer, 0, buffer.size) ?: -1
                     if (read > 0) {
                         // --- 1. Bandpass first (on buffer, real-time) – 带通最有用，放在最前 ---
                         run {
@@ -694,15 +579,12 @@ class AudioEngine(private val context: Context) {
             AmpManager.release(context, "engine")
         }
 
-        val keepMicAlive = currentEffectiveUsage == 72 && isForeground && hotwordProcess == null
+        val keepMicAlive = currentEffectiveUsage == 72 && isForeground
 
         streamThread?.let { t ->
             try { t.join(1000) } catch (_: Exception) {}
         }
         streamThread = null
-
-        // Always stop hotword child process
-        stopHotwordProcess()
 
         if (keepMicAlive && audioRecord != null) {
             startDrainThread()
@@ -738,7 +620,6 @@ class AudioEngine(private val context: Context) {
     fun destroy() {
         stop()
         stopDrainThread()
-        stopHotwordProcess()
         mainHandler.removeCallbacks(delayedReleaseRunnable)
         audioRecord?.let {
             try { if (it.recordingState == AudioRecord.RECORDSTATE_RECORDING) it.stop() } catch (_: Exception) {}
@@ -749,27 +630,6 @@ class AudioEngine(private val context: Context) {
         audioTrack?.let { try { it.release() } catch (_: Exception) {} }
         audioTrack = null
         currentEffectiveUsage = -1
-    }
-
-    private fun stopHotwordProcess() {
-        // Close TCP socket (signals the child to stop via broken pipe)
-        try { hotwordSocket?.close() } catch (_: Throwable) {}
-        hotwordSocket = null
-        hotwordInputStream = null
-
-        // Stop the app_process child (legacy ProcessBuilder path)
-        hotwordProcess?.let { proc ->
-            try {
-                proc.outputStream.write("STOP\n".toByteArray())
-                proc.outputStream.flush()
-            } catch (_: Throwable) {}
-            try { proc.waitFor(1, java.util.concurrent.TimeUnit.SECONDS) } catch (_: Throwable) {}
-            if (proc.isAlive) proc.destroyForcibly()
-        }
-        hotwordProcess = null
-
-        // Release ADB helper
-        hotwordAdbHelper = null
     }
 
     // ==================== Test Tone Playback ====================
@@ -864,260 +724,6 @@ class AudioEngine(private val context: Context) {
     /** Stop test tone if playing */
     fun stopTestTone() {
         isTestPlaying.set(false)
-    }
-
-    // ==================== Usage Sweep Test ====================
-
-    private val isSweeping = AtomicBoolean(false)
-
-    val sweeping: Boolean get() = isSweeping.get()
-
-    /**
-     * Sweep usage values 0..100 via a separate `app_process` child process.
-     * Native crashes from invalid usage values only kill the child; this process survives.
-     */
-    fun startUsageSweep(from: Int = 0, to: Int = 100, toneDurationMs: Int = 800) {
-        if (isSweeping.get()) {
-            log("Usage 遍历已在运行中")
-            return
-        }
-
-        Thread({
-            isSweeping.set(true)
-            sweepProcess = null
-            AmpManager.acquire(context, "sweep")
-
-            log("══ Usage 遍历测试 (进程隔离) ══")
-            log("范围: $from ~ $to, 每个播放 ${toneDurationMs}ms")
-            log("────────────────────────────")
-
-            val results = mutableListOf<String>()
-            var nextUsage = from
-            val maxRestarts = 50
-
-            var restarts = 0
-            while (nextUsage <= to && isSweeping.get() && restarts < maxRestarts) {
-                val lastTestedUsage = runSweepProcess(nextUsage, to, toneDurationMs, results)
-
-                if (!isSweeping.get()) break
-
-                if (lastTestedUsage < to) {
-                    val crashedUsage = lastTestedUsage + 1
-                    if (crashedUsage <= to) {
-                        val name = AudioUsageNames.nameOf(crashedUsage)
-                        val line = "  [$crashedUsage] $name → ✗ NATIVE CRASH (进程被杀)"
-                        log(line)
-                        results.add(line)
-                    }
-                    nextUsage = crashedUsage + 1
-                    restarts++
-                } else {
-                    nextUsage = to + 1
-                }
-            }
-
-            log("────────────────────────────")
-            log("══ 遍历完成, 共 ${results.size} 个 usage ══")
-            AmpManager.release(context, "sweep")
-            sweepProcess = null
-            isSweeping.set(false)
-        }, "Hey-UsageSweep").start()
-    }
-
-    /**
-     * Spawn one `app_process` child covering [from..to].
-     * Returns the last usage value that produced a RESULT line (-1 if none).
-     */
-    private fun runSweepProcess(
-        from: Int, to: Int, toneDurationMs: Int,
-        results: MutableList<String>
-    ): Int {
-        val apkPath = context.applicationInfo.sourceDir
-        val shellCmd = "export CLASSPATH='$apkPath'; " +
-                "exec app_process /system/bin " +
-                "com.kooo.hey.audio.UsageSweepWorker $from $to $toneDurationMs"
-
-        log("  启动子进程: usage $from..$to")
-        val pb = ProcessBuilder("sh", "-c", shellCmd)
-        pb.redirectErrorStream(false)
-
-        val process = pb.start()
-        sweepProcess = process
-
-        // Read stderr in background for diagnostics
-        val stderrThread = Thread({
-            try {
-                process.errorStream.bufferedReader().use { reader ->
-                    reader.forEachLine { line ->
-                        if (line.isNotBlank()) log("  [stderr] $line")
-                    }
-                }
-            } catch (_: Throwable) {}
-        }, "Hey-SweepStderr")
-        stderrThread.isDaemon = true
-        stderrThread.start()
-
-        var lastUsage = from - 1
-        var gotDone = false
-        val perUsageTimeoutMs = (toneDurationMs + 3000).toLong()
-
-        try {
-            val reader = process.inputStream.bufferedReader()
-            val readThread = Thread({
-                try {
-                    var line: String?
-                    while (reader.readLine().also { line = it } != null) {
-                        val l = line!!
-                        if (l == "DONE") {
-                            gotDone = true
-                            break
-                        }
-                        if (!l.startsWith("RESULT|")) continue
-
-                        val parts = l.split("|", limit = 5)
-                        if (parts.size < 3) continue
-
-                        val usage = parts[1].toIntOrNull() ?: continue
-                        lastUsage = usage
-                        val status = parts[2]
-                        val name = AudioUsageNames.nameOf(usage)
-
-                        val displayLine = if (status == "OK") {
-                            val devType = parts.getOrElse(3) { "?" }
-                            val addr = parts.getOrElse(4) { "" }
-                            "  [$usage] $name → $devType:$addr"
-                        } else {
-                            val reason = parts.getOrElse(3) { "unknown" }
-                            "  [$usage] $name → ✗ $reason"
-                        }
-                        log(displayLine)
-                        results.add(displayLine)
-
-                        if (!isSweeping.get()) {
-                            process.destroyForcibly()
-                            break
-                        }
-                    }
-                } catch (_: Throwable) {}
-            }, "Hey-SweepStdout")
-            readThread.isDaemon = true
-            readThread.start()
-
-            // Watchdog: if no progress for perUsageTimeoutMs, kill the child
-            var prevUsage = lastUsage
-            while (readThread.isAlive && !gotDone && isSweeping.get()) {
-                readThread.join(perUsageTimeoutMs)
-                if (readThread.isAlive && lastUsage == prevUsage && !gotDone) {
-                    log("  ⚠ 子进程超时 (卡在 usage ${lastUsage + 1}), 强制终止")
-                    process.destroyForcibly()
-                    break
-                }
-                prevUsage = lastUsage
-            }
-        } catch (_: Throwable) {}
-
-        val exitCode = try { process.waitFor() } catch (_: Throwable) { -1 }
-        try { stderrThread.join(2000) } catch (_: Throwable) {}
-
-        if (!gotDone && lastUsage < to) {
-            log("  ⚠ 子进程异常退出 (exit=$exitCode, 最后成功 usage=$lastUsage)")
-        }
-
-        return if (gotDone) to else lastUsage
-    }
-
-    @Volatile
-    private var sweepProcess: Process? = null
-
-    fun stopUsageSweep() {
-        isSweeping.set(false)
-        sweepProcess?.destroyForcibly()
-    }
-
-    // ==================== Mic Source Test (app_process) ====================
-
-    private val isMicTesting = AtomicBoolean(false)
-    val micTesting: Boolean get() = isMicTesting.get()
-
-    @Volatile
-    private var micTestProcess: Process? = null
-
-    /**
-     * Test all AudioSource values (0~10, 1997~1999) via a separate `app_process`
-     * child process with shell UID. This can access system-only sources like
-     * HOTWORD (1999) that regular apps cannot use.
-     */
-    fun startMicSourceTest(durationMs: Int = 1000) {
-        if (isMicTesting.get()) {
-            log("麦克风源测试已在运行中")
-            return
-        }
-
-        Thread({
-            isMicTesting.set(true)
-            micTestProcess = null
-
-            log("══ 麦克风源扫描 (app_process 提权) ══")
-            log("每个源录音 ${durationMs}ms")
-            log("────────────────────────────")
-
-            val apkPath = context.applicationInfo.sourceDir
-            val shellCmd = "export CLASSPATH='$apkPath'; " +
-                "exec app_process /system/bin " +
-                "com.kooo.hey.audio.MicSourceTestWorker $durationMs"
-
-            try {
-                val pb = ProcessBuilder("sh", "-c", shellCmd)
-                pb.redirectErrorStream(false)
-                val process = pb.start()
-                micTestProcess = process
-
-                val stderrThread = Thread({
-                    try {
-                        process.errorStream.bufferedReader().use { reader ->
-                            reader.forEachLine { line ->
-                                if (line.isNotBlank()) log("  [stderr] $line")
-                            }
-                        }
-                    } catch (_: Throwable) {}
-                }, "Hey-MicTestStderr").apply { isDaemon = true; start() }
-
-                process.inputStream.bufferedReader().use { reader ->
-                    reader.forEachLine { line ->
-                        if (line == "DONE") return@forEachLine
-                        if (!line.startsWith("RESULT|")) return@forEachLine
-
-                        val parts = line.split("|", limit = 4)
-                        if (parts.size < 3) return@forEachLine
-
-                        val srcId = parts[1]
-                        val status = parts[2]
-                        val rest = parts.getOrElse(3) { "" }
-
-                        if (status == "OK") {
-                            log("  ✓ [$srcId] $rest")
-                        } else {
-                            log("  ✗ [$srcId] $rest")
-                        }
-                    }
-                }
-
-                val exitCode = process.waitFor()
-                stderrThread.join(2000)
-                log("────────────────────────────")
-                log("══ 扫描完成 (exit=$exitCode) ══")
-            } catch (e: Exception) {
-                log("✗ 启动麦克风源测试失败: ${e.message}")
-            } finally {
-                micTestProcess = null
-                isMicTesting.set(false)
-            }
-        }, "Hey-MicSourceTest").start()
-    }
-
-    fun stopMicSourceTest() {
-        isMicTesting.set(false)
-        micTestProcess?.destroyForcibly()
     }
 
     // ==================== Mic Drain (keep-alive) ====================

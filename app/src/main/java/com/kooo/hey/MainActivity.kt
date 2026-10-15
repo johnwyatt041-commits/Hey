@@ -9,8 +9,6 @@ import android.content.pm.PackageManager
 import android.graphics.PorterDuff
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioDeviceInfo
-import android.media.session.MediaSession
-import android.media.session.PlaybackState
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -50,13 +48,9 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
-import com.kooo.hey.audio.HotkeyAccessibilityService
-import com.kooo.hey.audio.HotkeyManager
-import com.kooo.hey.audio.KeyNameHelper
 import com.kooo.hey.audio.MusicPlaybackController
 import com.kooo.hey.audio.MusicPlayerManager
 import com.kooo.hey.ui.FolderPickerDialog
-import com.kooo.hey.ui.KeyLearnDialog
 import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -95,8 +89,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var audioFocusHelper: AudioFocusHelper
     private lateinit var carVolumeHelper: CarVolumeHelper
     private lateinit var musicPlayerPanel: MusicPlayerPanel
-    private lateinit var hotkeyManager: HotkeyManager
-    private var mediaSession: MediaSession? = null
 
     // ==================== State Machine ====================
     private enum class TalkState { IDLE, CHARGING, TALKING_COUNTDOWN, TALKING_CONTINUOUS, STOPPING }
@@ -188,7 +180,6 @@ class MainActivity : AppCompatActivity() {
     ) { granted ->
         if (granted) {
             AppLog.i(TAG, "Notification permission granted")
-            HotkeyAccessibilityService.instance?.updateNotification()
         } else {
             AppLog.w(TAG, "Notification permission denied")
         }
@@ -271,18 +262,6 @@ class MainActivity : AppCompatActivity() {
         setupGuideButton()
         setupMusicPlayerPanel()
         setupQuickButtons()
-        hotkeyManager = HotkeyManager(this, config) { slot ->
-            runOnUiThread {
-                when (slot) {
-                    HotkeyManager.SLOT_APP_SWITCH -> toggleAppForegroundBackground()
-                    HotkeyManager.SLOT_TALK -> toggleTalkState()
-                    else -> handleQuickButtonClick(slot)
-                }
-            }
-        }
-        setupMediaSession()
-        LogcatTriggerService.syncWithConfig(this)
-        if (config.enableFloatingWindow && Settings.canDrawOverlays(this)) startFloatingWindow()
         startIdleBreathing()
 
         // Request permissions on startup
@@ -304,14 +283,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         isInForeground = true
-        try {
-            val nm = getSystemService(NOTIFICATION_SERVICE) as? android.app.NotificationManager
-            nm?.cancel(2002) // HotkeyAccessibilityService.WAKEUP_NOTIFICATION_ID
-        } catch (_: Exception) {}
-
-        if (HotkeyAccessibilityService.isRunning) {
-            HotkeyAccessibilityService.instance?.updateNotification()
-        }
 
         // Sync gain and volume sliders (may have changed in DebugActivity)
         if (::config.isInitialized) {
@@ -323,23 +294,16 @@ class MainActivity : AppCompatActivity() {
         }
         AmpManager.acquire(this, AmpManager.SESSION_FOREGROUND)
         if (::audioEngine.isInitialized) audioEngine.onAppForeground()
-        try {
-            mediaSession?.isActive = true
-        } catch (_: Exception) {}
     }
 
     override fun onPause() {
         super.onPause()
         isInForeground = false
-        try {
-            mediaSession?.isActive = false
-        } catch (_: Exception) {}
     }
 
     override fun onStop() {
         super.onStop()
         isInForeground = false
-        if (::hotkeyManager.isInitialized) hotkeyManager.reset()
         AmpManager.release(this, AmpManager.SESSION_FOREGROUND)
         if (::audioEngine.isInitialized) audioEngine.onAppBackground()
         AppLog.saveToPersistentLog(this)
@@ -349,12 +313,6 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         instance = null
         AppLog.saveToPersistentLog(this)
-        try {
-            mediaSession?.isActive = false
-            mediaSession?.release()
-        } catch (_: Exception) {}
-        mediaSession = null
-        if (::hotkeyManager.isInitialized) hotkeyManager.reset()
         handler.removeCallbacksAndMessages(null)
         countdownTimer?.cancel()
         btnColorAnimator?.cancel()
@@ -430,7 +388,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun startTalking(continuous: Boolean) {
         talkState = if (continuous) TalkState.TALKING_CONTINUOUS else TalkState.TALKING_COUNTDOWN
-        FloatingWindowService.instance?.updateTalkState(true)
         animateToActive(continuous)
 
         lifecycleScope.launch {
@@ -592,7 +549,6 @@ class MainActivity : AppCompatActivity() {
     private fun animateToIdle() {
         runOnUiThread {
             talkState = TalkState.IDLE
-            FloatingWindowService.instance?.updateTalkState(false)
             btnColorAnimator?.cancel()
 
             // 1. Button color transition back (300ms)
@@ -732,17 +688,14 @@ class MainActivity : AppCompatActivity() {
         if (intent == null) return
         val action = intent.action
         when {
-            action == FloatingWindowService.ACTION_START_TALK ||
             action == HeyCommandReceiver.ACTION_START_TALK -> {
                 if (fromNewIntent) performDefaultAction()
                 else handler.post { performDefaultAction() }
             }
-            action == FloatingWindowService.ACTION_STOP_TALK ||
             action == HeyCommandReceiver.ACTION_STOP_TALK -> {
                 if (fromNewIntent) stopAndMoveBack()
                 else handler.post { stopAndMoveBack() }
             }
-            action == FloatingWindowService.ACTION_TOGGLE_TALK ||
             action == HeyCommandReceiver.ACTION_TOGGLE_TALK -> {
                 if (fromNewIntent) toggleDefaultAction()
                 else handler.post { toggleDefaultAction() }
@@ -808,7 +761,7 @@ class MainActivity : AppCompatActivity() {
         startTalking(continuous = false)
     }
 
-    /** Whether talk is currently active (for external callers like FloatingWindowService). */
+    /** Whether talk is currently active (for external callers). */
     val isTalking: Boolean
         get() = talkState == TalkState.TALKING_COUNTDOWN || talkState == TalkState.TALKING_CONTINUOUS
 
@@ -878,14 +831,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Hard key/logcat monitoring is handled by foreground services.
-    // They send ACTION_START_TALK to this Activity, handled in onCreate / onNewIntent.
-
-    // ==================== Floating Window ====================
-
-    private fun startFloatingWindow() {
-        startForegroundService(Intent(this, FloatingWindowService::class.java))
-    }
 
     // ==================== Gain & Volume Sliders ====================
 
@@ -1199,9 +1144,6 @@ class MainActivity : AppCompatActivity() {
         val editName = dialogView.findViewById<EditText>(R.id.editSoundName)
         val textFile = dialogView.findViewById<TextView>(R.id.selectedFileText)
         val btnSelect = dialogView.findViewById<TextView>(R.id.btnSelectFile)
-        val textKeyBinding = dialogView.findViewById<TextView>(R.id.textKeyBinding)
-        val btnUnbindKey = dialogView.findViewById<TextView>(R.id.btnUnbindKey)
-        val btnBindKey = dialogView.findViewById<TextView>(R.id.btnBindKey)
         val btnClear = dialogView.findViewById<TextView>(R.id.btnClear)
         val btnDelete = dialogView.findViewById<TextView>(R.id.btnDelete)
         val btnCancel = dialogView.findViewById<TextView>(R.id.btnCancel)
@@ -1213,8 +1155,6 @@ class MainActivity : AppCompatActivity() {
         editName.setSelection(currentName.length)
 
         var selectedPath = config.getQuickSoundPath(index)
-        var selectedKeyCode = config.getQuickSoundKeyCode(index)
-        var selectedGesture = config.getQuickSoundGesture(index)
 
         fun updateFileDisplay() {
             if (selectedPath.isNotEmpty()) {
@@ -1227,33 +1167,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         updateFileDisplay()
-
-        fun updateKeyDisplay() {
-            if (selectedKeyCode > 0) {
-                textKeyBinding.text = KeyNameHelper.getBindingDescription(this, selectedKeyCode, selectedGesture)
-                textKeyBinding.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
-                btnUnbindKey.visibility = View.VISIBLE
-            } else {
-                textKeyBinding.text = getString(R.string.quick_sound_key_unbound)
-                textKeyBinding.setTextColor(ContextCompat.getColor(this, R.color.on_surface_muted))
-                btnUnbindKey.visibility = View.GONE
-            }
-        }
-        updateKeyDisplay()
-
-        btnUnbindKey.setOnClickListener {
-            selectedKeyCode = 0
-            selectedGesture = KeyNameHelper.GESTURE_SINGLE
-            updateKeyDisplay()
-        }
-
-        btnBindKey.setOnClickListener {
-            KeyLearnDialog.show(this, selectedKeyCode, selectedGesture) { newCode, newGesture ->
-                selectedKeyCode = newCode
-                selectedGesture = newGesture
-                updateKeyDisplay()
-            }
-        }
 
         btnSelect.setOnClickListener {
             showTrackSelectionDialog { chosenTrack ->
@@ -1300,103 +1213,11 @@ class MainActivity : AppCompatActivity() {
             val finalName = if (enteredName.isNotEmpty()) enteredName else config.getQuickSoundName(index)
             config.setQuickSoundName(index, finalName)
             config.setQuickSoundPath(index, selectedPath)
-            config.setQuickSoundKeyCode(index, selectedKeyCode)
-            config.setQuickSoundGesture(index, selectedGesture)
             updateQuickButtonsUi()
             dialog.dismiss()
         }
 
         dialog.show()
-    }
-
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (HotkeyManager.isReplaying) {
-            return super.dispatchKeyEvent(event)
-        }
-
-        if (KeyLearnDialog.isListening) {
-            if (event.action == KeyEvent.ACTION_UP) {
-                if (event.keyCode == KeyEvent.KEYCODE_BACK) {
-                    return super.dispatchKeyEvent(event)
-                }
-                KeyLearnDialog.dispatchKey(event.keyCode)
-                return true
-            }
-            return true
-        }
-
-        val focused = currentFocus
-        if (focused is EditText) {
-            val kc = event.keyCode
-            if ((kc in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9) ||
-                (kc in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z) ||
-                kc == KeyEvent.KEYCODE_SPACE ||
-                kc == KeyEvent.KEYCODE_DEL ||
-                kc == KeyEvent.KEYCODE_ENTER ||
-                kc == KeyEvent.KEYCODE_DPAD_LEFT ||
-                kc == KeyEvent.KEYCODE_DPAD_RIGHT
-            ) {
-                return super.dispatchKeyEvent(event)
-            }
-        }
-
-        if (::hotkeyManager.isInitialized && hotkeyManager.handleKeyEvent(event)) {
-            return true
-        }
-
-        return super.dispatchKeyEvent(event)
-    }
-
-    private fun setupMediaSession() {
-        try {
-            val session = MediaSession(this, "Hey:MainSession")
-            @Suppress("DEPRECATION")
-            session.setFlags(
-                MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or
-                MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS
-            )
-            val playbackState = PlaybackState.Builder()
-                .setActions(
-                    PlaybackState.ACTION_PLAY or
-                    PlaybackState.ACTION_PAUSE or
-                    PlaybackState.ACTION_PLAY_PAUSE or
-                    PlaybackState.ACTION_SKIP_TO_NEXT or
-                    PlaybackState.ACTION_SKIP_TO_PREVIOUS or
-                    PlaybackState.ACTION_STOP
-                )
-                .setState(PlaybackState.STATE_PLAYING, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1.0f)
-                .build()
-            session.setPlaybackState(playbackState)
-            session.setCallback(object : MediaSession.Callback() {
-                override fun onMediaButtonEvent(mediaButtonIntent: Intent): Boolean {
-                    val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
-                    }
-                    if (event != null) {
-                        if (HotkeyManager.isReplaying) {
-                            return false
-                        }
-                        AppLog.i(TAG, "MainActivity MediaSession onMediaButtonEvent: keyCode=${event.keyCode}, action=${event.action}")
-                        if (KeyLearnDialog.isListening) {
-                            if (event.action == KeyEvent.ACTION_UP) {
-                                KeyLearnDialog.dispatchKey(event.keyCode)
-                            }
-                            return true
-                        }
-                        if (::hotkeyManager.isInitialized && hotkeyManager.handleKeyEvent(event)) {
-                            return true
-                        }
-                    }
-                    return super.onMediaButtonEvent(mediaButtonIntent)
-                }
-            }, handler)
-            mediaSession = session
-        } catch (e: Exception) {
-            AppLog.w(TAG, "Failed to initialize MediaSession in MainActivity", e)
-        }
     }
 
     private fun showTrackSelectionDialog(onSelected: (MusicPlayerManager.Track) -> Unit) {

@@ -216,19 +216,13 @@ class AppConfig(private val context: Context) {
         for (i in index until current - 1) {
             val nextName = prefs.getString("quick_sound_name_${i + 1}", null)
             val nextPath = prefs.getString("quick_sound_path_${i + 1}", null)
-            val nextKey = if (prefs.contains("quick_sound_key_${i + 1}")) prefs.getInt("quick_sound_key_${i + 1}", 0) else null
-            val nextGesture = if (prefs.contains("quick_sound_gesture_${i + 1}")) prefs.getInt("quick_sound_gesture_${i + 1}", 0) else null
 
             if (nextName != null) editor.putString("quick_sound_name_$i", nextName) else editor.remove("quick_sound_name_$i")
             if (nextPath != null) editor.putString("quick_sound_path_$i", nextPath) else editor.remove("quick_sound_path_$i")
-            if (nextKey != null) editor.putInt("quick_sound_key_$i", nextKey) else editor.remove("quick_sound_key_$i")
-            if (nextGesture != null) editor.putInt("quick_sound_gesture_$i", nextGesture) else editor.remove("quick_sound_gesture_$i")
         }
         val last = current - 1
         editor.remove("quick_sound_name_$last")
         editor.remove("quick_sound_path_$last")
-        editor.remove("quick_sound_key_$last")
-        editor.remove("quick_sound_gesture_$last")
 
         editor.putInt(KEY_QUICK_SOUND_COUNT, current - 1)
         editor.apply()
@@ -273,66 +267,8 @@ class AppConfig(private val context: Context) {
         prefs.edit()
             .putString("quick_sound_name_$index", defaultName)
             .putString("quick_sound_path_$index", "")
-            .remove("quick_sound_key_$index")
-            .remove("quick_sound_gesture_$index")
             .apply()
     }
-
-    fun getQuickSoundKeyCode(index: Int): Int {
-        return prefs.getInt("quick_sound_key_$index", 0)
-    }
-
-    fun setQuickSoundKeyCode(index: Int, keyCode: Int) {
-        prefs.edit().putInt("quick_sound_key_$index", keyCode).apply()
-    }
-
-    fun getQuickSoundGesture(index: Int): Int {
-        return prefs.getInt("quick_sound_gesture_$index", 0) // 0=Single, 1=Double, 2=Long
-    }
-
-    fun setQuickSoundGesture(index: Int, gesture: Int) {
-        prefs.edit().putInt("quick_sound_gesture_$index", gesture.coerceIn(0, 2)).apply()
-    }
-
-    fun clearQuickSoundKeyBinding(index: Int) {
-        prefs.edit()
-            .remove("quick_sound_key_$index")
-            .remove("quick_sound_gesture_$index")
-            .apply()
-    }
-
-    // ==================== Global Function Key Bindings ====================
-
-    /** Enable background hardware/bluetooth key monitoring via AccessibilityService. Default true. */
-    var enableBackgroundKeyMonitor: Boolean
-        get() = prefs.getBoolean(KEY_ENABLE_BG_KEY_MONITOR, true)
-        set(value) = prefs.edit().putBoolean(KEY_ENABLE_BG_KEY_MONITOR, value).apply()
-
-    var appSwitchKeyCode: Int
-        get() = prefs.getInt(KEY_APP_SWITCH_KEY, 0)
-        set(value) = prefs.edit().putInt(KEY_APP_SWITCH_KEY, value).apply()
-
-    var appSwitchGesture: Int
-        get() = prefs.getInt(KEY_APP_SWITCH_GESTURE, 0)
-        set(value) = prefs.edit().putInt(KEY_APP_SWITCH_GESTURE, value.coerceIn(0, 2)).apply()
-
-    fun clearAppSwitchKeyBinding() {
-        prefs.edit().remove(KEY_APP_SWITCH_KEY).remove(KEY_APP_SWITCH_GESTURE).apply()
-    }
-    fun clearAppSwitchKey() = clearAppSwitchKeyBinding()
-
-    var talkKeyCode: Int
-        get() = prefs.getInt(KEY_TALK_KEY, 0)
-        set(value) = prefs.edit().putInt(KEY_TALK_KEY, value).apply()
-
-    var talkGesture: Int
-        get() = prefs.getInt(KEY_TALK_GESTURE, 0)
-        set(value) = prefs.edit().putInt(KEY_TALK_GESTURE, value.coerceIn(0, 2)).apply()
-
-    fun clearTalkKeyBinding() {
-        prefs.edit().remove(KEY_TALK_KEY).remove(KEY_TALK_GESTURE).apply()
-    }
-    fun clearTalkKey() = clearTalkKeyBinding()
 
     // ==================== Visual ====================
 
@@ -361,47 +297,12 @@ class AppConfig(private val context: Context) {
         get() = prefs.getInt(KEY_LAUNCH_MUSIC_INDEX, 0)
         set(value) = prefs.edit().putInt(KEY_LAUNCH_MUSIC_INDEX, value.coerceAtLeast(0)).apply()
 
-    // ==================== Shortcut & Floating Window ====================
-
-    /** Enable logcat keyword trigger (monitors system log, triggers talk on match). Default OFF. */
-    var enableLogcatTrigger: Boolean
-        get() = prefs.getBoolean(KEY_ENABLE_LOGCAT_TRIGGER, false)
-        set(value) = prefs.edit().putBoolean(KEY_ENABLE_LOGCAT_TRIGGER, value).apply()
-
-    /** Logcat trigger keyword. Empty = disabled. */
-    var logcatTriggerKeyword: String
-        get() = prefs.getString(KEY_LOGCAT_TRIGGER_KEYWORD, "") ?: ""
-        set(value) = prefs.edit().putString(KEY_LOGCAT_TRIGGER_KEYWORD, value).apply()
-
-    /** Enable floating talk button overlay. Default OFF. */
-    var enableFloatingWindow: Boolean
-        get() = prefs.getBoolean(KEY_ENABLE_FLOATING, false)
-        set(value) = prefs.edit().putBoolean(KEY_ENABLE_FLOATING, value).apply()
+    // ==================== Automation ====================
 
     /** Auto start countdown talk when app is brought to foreground from launcher icon. */
     var enableAutoTalkOnForeground: Boolean
         get() = prefs.getBoolean(KEY_ENABLE_AUTO_TALK_ON_FOREGROUND, false)
         set(value) = prefs.edit().putBoolean(KEY_ENABLE_AUTO_TALK_ON_FOREGROUND, value).apply()
-
-    /** Floating window button size in dp (32~120). Default 56. */
-    var floatingWindowSize: Int
-        get() = prefs.getInt(KEY_FLOATING_SIZE, DEFAULT_FLOATING_SIZE)
-        set(value) = prefs.edit().putInt(KEY_FLOATING_SIZE, value).apply()
-
-    /** Floating window opacity 0.1~1.0. Default 0.7. */
-    var floatingWindowAlpha: Float
-        get() = prefs.getFloat(KEY_FLOATING_ALPHA, DEFAULT_FLOATING_ALPHA)
-        set(value) = prefs.edit().putFloat(KEY_FLOATING_ALPHA, value).apply()
-
-    /** Floating window X position in pixels. -1 = use default. */
-    var floatingWindowX: Int
-        get() = prefs.getInt(KEY_FLOATING_X, -1)
-        set(value) = prefs.edit().putInt(KEY_FLOATING_X, value).apply()
-
-    /** Floating window Y position in pixels. -1 = use default. */
-    var floatingWindowY: Int
-        get() = prefs.getInt(KEY_FLOATING_Y, -1)
-        set(value) = prefs.edit().putInt(KEY_FLOATING_Y, value).apply()
 
     // ==================== Bundled Model Defaults ====================
 
@@ -431,7 +332,6 @@ class AppConfig(private val context: Context) {
                 "outputDeviceId" to KEY_OUTPUT_DEVICE_ID,
                 "dspMode" to KEY_DSP_MODE,
                 "reverbMode" to KEY_REVERB_MODE,
-                "floatingWindowSize" to KEY_FLOATING_SIZE,
                 "highPassCutoff" to KEY_HIGH_PASS_CUTOFF,
                 "lowPassCutoff" to KEY_LOW_PASS_CUTOFF,
                 "launchAction" to KEY_LAUNCH_ACTION,
@@ -441,7 +341,6 @@ class AppConfig(private val context: Context) {
                 "minGainLimit" to KEY_MIN_GAIN_LIMIT,
                 "maxGainLimit" to KEY_MAX_GAIN_LIMIT,
                 "rippleThreshold" to KEY_RIPPLE_THRESHOLD,
-                "floatingWindowAlpha" to KEY_FLOATING_ALPHA,
                 "noiseGateStrength" to KEY_NOISE_GATE_STRENGTH,
                 "freqShiftHz" to KEY_FREQ_SHIFT_HZ,
             )
@@ -451,7 +350,6 @@ class AppConfig(private val context: Context) {
                 "enableLowPass" to KEY_ENABLE_BANDPASS,
                 "enableBandpass" to KEY_ENABLE_BANDPASS,
                 "enableFreqShift" to KEY_ENABLE_FREQ_SHIFT,
-                "enableFloatingWindow" to KEY_ENABLE_FLOATING,
                 "enableAutoTalkOnForeground" to KEY_ENABLE_AUTO_TALK_ON_FOREGROUND,
             )
             val stringProps = mapOf(
@@ -499,12 +397,6 @@ class AppConfig(private val context: Context) {
         const val MAX_QUICK_SOUNDS = 12
         const val MIN_QUICK_SOUNDS = 1
 
-        private const val KEY_ENABLE_BG_KEY_MONITOR = "enable_bg_key_monitor"
-        private const val KEY_APP_SWITCH_KEY = "app_switch_key"
-        private const val KEY_APP_SWITCH_GESTURE = "app_switch_gesture"
-        private const val KEY_TALK_KEY = "talk_key"
-        private const val KEY_TALK_GESTURE = "talk_gesture"
-
         private const val KEY_AUDIO_USAGE = "audio_usage_custom"  // keep old key for migration
         private const val KEY_OUTPUT_DEVICE = "output_device"
         private const val KEY_AUDIO_SOURCE = "audio_source"
@@ -524,14 +416,7 @@ class AppConfig(private val context: Context) {
         private const val KEY_ENABLE_FREQ_SHIFT = "enable_freq_shift"
         private const val KEY_FREQ_SHIFT_HZ = "freq_shift_hz"
         private const val KEY_REVERB_MODE = "reverb_mode"
-        private const val KEY_ENABLE_LOGCAT_TRIGGER = "enable_logcat_trigger"
-        private const val KEY_LOGCAT_TRIGGER_KEYWORD = "logcat_trigger_keyword"
-        private const val KEY_ENABLE_FLOATING = "enable_floating"
         private const val KEY_ENABLE_AUTO_TALK_ON_FOREGROUND = "enable_auto_talk_on_foreground"
-        private const val KEY_FLOATING_SIZE = "floating_size"
-        private const val KEY_FLOATING_ALPHA = "floating_alpha"
-        private const val KEY_FLOATING_X = "floating_x"
-        private const val KEY_FLOATING_Y = "floating_y"
         private const val KEY_DSP_MODE = "dsp_mode"
         private const val KEY_RIPPLE_THRESHOLD = "ripple_threshold"
         private const val KEY_MUSIC_FOLDER = "music_folder"
@@ -554,8 +439,6 @@ class AppConfig(private val context: Context) {
         const val DEFAULT_VOLUME_GAIN = 5.0f  // 5x boost
         const val DEFAULT_MIN_GAIN_LIMIT = 1.0f
         const val DEFAULT_MAX_GAIN_LIMIT = 30.0f
-        const val DEFAULT_FLOATING_SIZE = 56  // dp
-        const val DEFAULT_FLOATING_ALPHA = 0.7f
         const val DEFAULT_RIPPLE_THRESHOLD = 0.03f
         const val DEFAULT_AUDIO_USAGE = 73
         const val DEFAULT_HIGH_PASS_CUTOFF = 300

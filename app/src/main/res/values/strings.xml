@@ -48,18 +48,7 @@
     <string name="quick_sound_file_not_found">音频文件不存在，请重新选择</string>
     <string name="quick_sound_set_success">已将「%1$s」设为%2$s</string>
     <string name="quick_sound_set_as">设为快捷播放</string>
-    <string name="quick_sound_key_label">物理/蓝牙按键</string>
-    <string name="quick_sound_key_unbound">未绑定按键</string>
-    <string name="quick_sound_btn_bind">录制按键</string>
-    <string name="quick_sound_btn_unbind">解绑</string>
-    <string name="quick_sound_learn_title">录制蓝牙/物理按键</string>
-    <string name="quick_sound_learn_hint">请按下遥控器或方向盘上的按键…</string>
-    <string name="quick_sound_detected_key">已识别按键: %1$s</string>
-    <string name="quick_sound_gesture_label">触发动作:</string>
-    <string name="quick_sound_gesture_single">单击</string>
-    <string name="quick_sound_gesture_double">双击</string>
-    <string name="quick_sound_gesture_long">长按</string>
-    <string name="quick_sound_confirm">确定</string>
+
     <string name="quick_sound_dest_label">播放通道 (输出设备)</string>
     <string name="quick_sound_dest_external">车外扬声器 (喊话/外放通道)</string>
     <string name="quick_sound_dest_cabin">车内音响 (媒体通道)</string>
@@ -92,21 +81,7 @@
     <string name="debug_log_section">运行日志</string>
     <string name="debug_output_device">输出设备</string>
     <string name="debug_clear_log">清除日志</string>
-    <!-- Background Key Monitor & Accessibility -->
-    <string name="status_notification_active">🟢 Hey!  (Active)</string>
-    <string name="status_notification_paused">⚪ Hey!  (Paused)</string>
-    <string name="notification_action_pause">暂停</string>
-    <string name="notification_action_resume">开启</string>
-    <string name="app_switch_key_title">应用显隐切换</string>
-    <string name="app_switch_key_desc">按下快捷按键在前台显示或最小化至后台</string>
-    <string name="talk_key_title">一键喊话对讲</string>
-    <string name="talk_key_desc">按下快捷按键开始或结束喊话</string>
-    <string name="bg_key_monitor_title">后台按键监听</string>
-    <string name="bg_key_monitor_desc">开启后在后台（如导航界面）也可响应物理按键</string>
-    <string name="accessibility_service_name">Hey! 按键监听服务</string>
-    <string name="accessibility_service_desc">用于在后台监听方向盘和蓝牙按键以触发快捷音乐、喊话或应用显隐切换</string>
-    <string name="accessibility_status_enabled">无障碍服务: 已启用 🟢</string>
-    <string name="accessibility_status_disabled">无障碍服务: 未启用 ⚪ (点击去开启)</string>
+
 
     <string name="debug_save">保存配置</string>
 </resources>

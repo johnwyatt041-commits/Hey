@@ -8,9 +8,6 @@
 -keep class com.kooo.hey.audio.VolumeShellMain {
     public static void main(java.lang.String[]);
 }
--keep class com.kooo.hey.audio.UsageSweepWorker {
-    public static void main(java.lang.String[]);
-}
 
 # ==================== AndroidX / Material ====================
 -dontwarn androidx.**

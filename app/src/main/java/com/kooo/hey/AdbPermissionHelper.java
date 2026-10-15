@@ -246,10 +246,7 @@ public class AdbPermissionHelper {
                 executePermissionCommand(cmd, callback);
             }
 
-            // 5. 处理无障碍服务（需要先查询再设置）
-            if (!cancelled && socket != null && !socket.isClosed()) {
-                handleAccessibilityService(callback);
-            }
+
 
             // 6. 电池优化白名单
             if (!cancelled && socket != null && !socket.isClosed()) {
@@ -836,19 +833,11 @@ public class AdbPermissionHelper {
                     "pm grant " + packageName + " android.permission.WRITE_EXTERNAL_STORAGE"));
         }
 
-        // 日志读取权限
-        commands.add(new PermissionCommand("日志读取权限",
-                "pm grant " + packageName + " android.permission.READ_LOGS"));
-
         // 蓝牙连接权限 (Android 12+)
         if (sdk >= 31) {
             commands.add(new PermissionCommand("蓝牙连接权限",
                     "pm grant " + packageName + " android.permission.BLUETOOTH_CONNECT"));
         }
-
-        // === 特殊权限 (appops) ===
-        commands.add(new PermissionCommand("悬浮窗权限",
-                "appops set " + packageName + " SYSTEM_ALERT_WINDOW allow"));
 
         // 所有文件访问 (Android 11+)
         if (sdk >= 30) {
@@ -857,65 +846,6 @@ public class AdbPermissionHelper {
         }
 
         return commands;
-    }
-
-    // ==================== 无障碍服务处理 ====================
-
-    /**
-     * 处理无障碍服务权限（需要先查询当前值再追加设置）
-     */
-    private void handleAccessibilityService(Callback callback) {
-        String serviceName = packageName + "/" + packageName + ".KeepAliveAccessibilityService";
-
-        log(callback, "[无障碍服务]");
-
-        try {
-            // 查询当前已启用的无障碍服务
-            String getCmd = "settings get secure enabled_accessibility_services";
-            log(callback, "  $ " + getCmd);
-            String current = executeShellCommand(getCmd);
-            current = (current != null) ? current.trim() : "";
-
-            String display = (current.isEmpty() || current.equals("null")) ? "(无)" : current;
-            log(callback, "  → 当前: " + display);
-
-            // 检查是否已启用
-            if (current.contains(packageName)) {
-                log(callback, "  ✓ 已启用");
-                successCount++;
-                return;
-            }
-
-            // 构建新值（追加而非覆盖）
-            String newValue;
-            if (current.isEmpty() || current.equals("null")) {
-                newValue = serviceName;
-            } else {
-                newValue = current + ":" + serviceName;
-            }
-
-            // 设置无障碍服务列表
-            String putCmd = "settings put secure enabled_accessibility_services " + newValue;
-            log(callback, "  $ " + putCmd);
-            String result = executeShellCommand(putCmd);
-            if (result != null && !result.trim().isEmpty() && isErrorResult(result.trim())) {
-                log(callback, "  ✗ " + result.trim());
-                failCount++;
-                return;
-            }
-
-            // 启用无障碍功能
-            String enableCmd = "settings put secure accessibility_enabled 1";
-            log(callback, "  $ " + enableCmd);
-            executeShellCommand(enableCmd);
-
-            log(callback, "  ✓ 成功");
-            successCount++;
-
-        } catch (Exception e) {
-            log(callback, "  ✗ " + e.getMessage());
-            failCount++;
-        }
     }
 
     // ==================== 电池优化处理 ====================

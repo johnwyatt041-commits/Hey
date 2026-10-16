@@ -48,6 +48,10 @@
     <string name="quick_sound_file_not_found">音频文件不存在，请重新选择</string>
     <string name="quick_sound_set_success">已将「%1$s」设为%2$s</string>
     <string name="quick_sound_set_as">设为快捷播放</string>
+    <string name="quick_sound_volume_label">播放音量</string>
+    <string name="quick_sound_vol_follow_main">跟随主音量 (%1$d%%)</string>
+    <string name="quick_sound_vol_custom">独立音量</string>
+    <string name="quick_sound_vol_slider_label">音量大小</string>
 
     <string name="quick_sound_dest_label">播放通道 (输出设备)</string>
     <string name="quick_sound_dest_external">车外扬声器 (喊话/外放通道)</string>

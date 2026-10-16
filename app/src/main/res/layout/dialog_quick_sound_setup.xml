@@ -87,6 +87,92 @@
             android:textSize="@dimen/dialog_button_size" />
     </LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="@string/quick_sound_volume_label"
+        android:textColor="@color/on_surface_dim"
+        android:textSize="@dimen/dialog_body_size" />
+
+    <!-- Volume mode selection: Follow Main vs Independent Volume -->
+    <RadioGroup
+        android:id="@+id/radioGroupVolumeMode"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioVolFollowMain"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/bg_radio_option"
+            android:button="@null"
+            android:gravity="center"
+            android:text="@string/quick_sound_vol_follow_main"
+            android:textColor="@color/radio_text_color"
+            android:textSize="@dimen/dialog_button_size" />
+
+        <RadioButton
+            android:id="@+id/radioVolCustom"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_radio_option"
+            android:button="@null"
+            android:gravity="center"
+            android:text="@string/quick_sound_vol_custom"
+            android:textColor="@color/radio_text_color"
+            android:textSize="@dimen/dialog_button_size" />
+    </RadioGroup>
+
+    <!-- Custom Volume adjustment row -->
+    <LinearLayout
+        android:id="@+id/layoutCustomVolume"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_dialog_input"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
+
+        <TextView
+            android:id="@+id/textCustomVolLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/quick_sound_vol_slider_label"
+            android:textColor="@color/on_surface_dim"
+            android:textSize="@dimen/dialog_body_size" />
+
+        <SeekBar
+            android:id="@+id/seekCustomVolume"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:max="100"
+            android:progress="100"
+            android:progressTint="@color/red_primary"
+            android:thumbTint="@color/red_primary" />
+
+        <TextView
+            android:id="@+id/textCustomVolumeValue"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:text="100%"
+            android:textColor="@color/on_surface"
+            android:textSize="@dimen/dialog_body_size"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
 
     <!-- Dialog buttons row -->
     <LinearLayout

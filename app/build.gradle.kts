@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-val appVersionName = "1.6.0"
+val appVersionName = "1.6.1"
 
 android {
     namespace = "com.kooo.hey"
@@ -12,9 +12,8 @@ android {
         applicationId = "com.kooo.hey"
         minSdk = 28
         targetSdk = 36
-        versionCode = 35
+        versionCode = 36
         versionName = appVersionName
-
     }
 
     signingConfigs {

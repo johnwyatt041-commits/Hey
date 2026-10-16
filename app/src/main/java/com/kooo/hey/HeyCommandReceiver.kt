@@ -146,8 +146,13 @@ class HeyCommandReceiver : BroadcastReceiver() {
                 musicManager.stop()
             } else if (path.isNotEmpty() && File(path).exists()) {
                 val name = config.getQuickSoundName(slot)
-                AppLog.i(TAG, "Playing quick sound $slot: $name ($path)")
-                musicManager.playPath(path, name)
+                val volume = if (config.getQuickSoundCustomVolumeEnabled(slot)) {
+                    config.getQuickSoundVolume(slot)
+                } else {
+                    null
+                }
+                AppLog.i(TAG, "Playing quick sound $slot: $name ($path), customVol=$volume")
+                musicManager.playPath(path, name, isOneShot = true, volume = volume)
             } else {
                 AppLog.w(TAG, "Quick sound slot $slot has no audio file configured: $path")
             }

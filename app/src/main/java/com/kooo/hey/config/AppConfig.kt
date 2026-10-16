@@ -216,13 +216,21 @@ class AppConfig(private val context: Context) {
         for (i in index until current - 1) {
             val nextName = prefs.getString("quick_sound_name_${i + 1}", null)
             val nextPath = prefs.getString("quick_sound_path_${i + 1}", null)
+            val nextVolEnabled = if (prefs.contains("quick_sound_custom_vol_enabled_${i + 1}"))
+                prefs.getBoolean("quick_sound_custom_vol_enabled_${i + 1}", false) else null
+            val nextVol = if (prefs.contains("quick_sound_volume_${i + 1}"))
+                prefs.getFloat("quick_sound_volume_${i + 1}", 1.0f) else null
 
             if (nextName != null) editor.putString("quick_sound_name_$i", nextName) else editor.remove("quick_sound_name_$i")
             if (nextPath != null) editor.putString("quick_sound_path_$i", nextPath) else editor.remove("quick_sound_path_$i")
+            if (nextVolEnabled != null) editor.putBoolean("quick_sound_custom_vol_enabled_$i", nextVolEnabled) else editor.remove("quick_sound_custom_vol_enabled_$i")
+            if (nextVol != null) editor.putFloat("quick_sound_volume_$i", nextVol) else editor.remove("quick_sound_volume_$i")
         }
         val last = current - 1
         editor.remove("quick_sound_name_$last")
         editor.remove("quick_sound_path_$last")
+        editor.remove("quick_sound_custom_vol_enabled_$last")
+        editor.remove("quick_sound_volume_$last")
 
         editor.putInt(KEY_QUICK_SOUND_COUNT, current - 1)
         editor.apply()
@@ -254,6 +262,30 @@ class AppConfig(private val context: Context) {
         prefs.edit().putString("quick_sound_path_$index", path).apply()
     }
 
+    fun getQuickSoundCustomVolumeEnabled(index: Int): Boolean {
+        return prefs.getBoolean("quick_sound_custom_vol_enabled_$index", false)
+    }
+
+    fun setQuickSoundCustomVolumeEnabled(index: Int, enabled: Boolean) {
+        prefs.edit().putBoolean("quick_sound_custom_vol_enabled_$index", enabled).apply()
+    }
+
+    fun getQuickSoundVolume(index: Int): Float {
+        return prefs.getFloat("quick_sound_volume_$index", 1.0f).coerceIn(0f, 1f)
+    }
+
+    fun setQuickSoundVolume(index: Int, volume: Float) {
+        prefs.edit().putFloat("quick_sound_volume_$index", volume.coerceIn(0f, 1f)).apply()
+    }
+
+    fun getEffectiveQuickSoundVolume(index: Int): Float {
+        return if (getQuickSoundCustomVolumeEnabled(index)) {
+            getQuickSoundVolume(index)
+        } else {
+            musicVolume
+        }
+    }
+
     fun clearQuickSound(index: Int) {
         val defaultName = when (index) {
             0 -> context.getString(R.string.quick_sound_default_1)
@@ -267,6 +299,8 @@ class AppConfig(private val context: Context) {
         prefs.edit()
             .putString("quick_sound_name_$index", defaultName)
             .putString("quick_sound_path_$index", "")
+            .remove("quick_sound_custom_vol_enabled_$index")
+            .remove("quick_sound_volume_$index")
             .apply()
     }
 

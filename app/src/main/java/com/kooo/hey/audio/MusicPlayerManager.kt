@@ -53,6 +53,10 @@ class MusicPlayerManager(private val context: Context) {
     var isOneShotPlayback: Boolean = false
         private set
 
+    /** Custom independent volume for currently playing one-shot track, if any. */
+    var currentCustomVolume: Float? = null
+        private set
+
     var currentTrack: Track? = null
         private set
 
@@ -149,7 +153,7 @@ class MusicPlayerManager(private val context: Context) {
      * Play a track directly by file path (e.g. quick sound).
      * Defaults to one-shot playback so it stops when finished and never loops/auto-advances.
      */
-    fun playPath(path: String, title: String? = null, isOneShot: Boolean = true) {
+    fun playPath(path: String, title: String? = null, isOneShot: Boolean = true, volume: Float? = null) {
         val file = File(path)
         if (!file.exists()) {
             AppLog.w(TAG, "File not found: $path")
@@ -160,7 +164,7 @@ class MusicPlayerManager(private val context: Context) {
         if (!isOneShot) {
             currentIndex = playlist.indexOfFirst { it.path == file.absolutePath }
         }
-        playTrackInternal(track)
+        playTrackInternal(track, volume)
     }
 
     private fun isMusicExternal(): Boolean =
@@ -176,14 +180,16 @@ class MusicPlayerManager(private val context: Context) {
         }
     }
 
-    private fun playTrackInternal(track: Track) {
+    private fun playTrackInternal(track: Track, volume: Float? = null) {
         stopInternal()
         usingSoftPlayer = false
         currentTrack = track
+        currentCustomVolume = volume
 
         try {
             val outDevice = if (isMusicExternal()) findOutputDeviceById(appConfig.outputDeviceId) else null
             val effectiveUsage = getMusicEffectiveUsage()
+            val vol = (volume ?: appConfig.musicVolume).coerceIn(0f, 1f)
             mediaPlayer = MediaPlayer().apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
@@ -198,12 +204,11 @@ class MusicPlayerManager(private val context: Context) {
                 }
                 setOnErrorListener { _, what, extra ->
                     AppLog.e(TAG, "MediaPlayer error: what=$what extra=$extra, falling back to software decoder")
-                    handler.post { fallbackToSoftPlayer(track) }
+                    handler.post { fallbackToSoftPlayer(track, volume) }
                     true
                 }
                 setDataSource(track.path)
                 prepare()
-                val vol = appConfig.musicVolume.coerceIn(0f, 1f)
                 setVolume(vol, vol)
                 setOnCompletionListener {
                     handler.post { handleTrackCompletion() }
@@ -217,20 +222,21 @@ class MusicPlayerManager(private val context: Context) {
             notifyTrackChanged(track, currentIndex)
             notifyPlayState(true)
             handler.post(progressRunnable)
-            AppLog.d(TAG, "Playing: ${track.name} (usage=$effectiveUsage, vol=${appConfig.musicVolume})")
+            AppLog.d(TAG, "Playing: ${track.name} (usage=$effectiveUsage, vol=$vol, customVolume=${volume != null})")
         } catch (e: Exception) {
             AppLog.w(TAG, "MediaPlayer failed for: ${track.name}, trying software decoder", e)
             mediaPlayer?.release()
             mediaPlayer = null
-            fallbackToSoftPlayer(track)
+            fallbackToSoftPlayer(track, volume)
         }
     }
 
-    private fun fallbackToSoftPlayer(track: Track) {
+    private fun fallbackToSoftPlayer(track: Track, volume: Float? = null) {
         mediaPlayer?.release()
         mediaPlayer = null
         usingSoftPlayer = true
         currentTrack = track
+        currentCustomVolume = volume
 
         val sp = SoftwareAudioPlayer(ctx)
         softPlayer = sp
@@ -245,6 +251,7 @@ class MusicPlayerManager(private val context: Context) {
             handler.post {
                 isPlaying = false
                 currentTrack = null
+                currentCustomVolume = null
                 AmpManager.release(ctx, "music")
                 stopPlaybackService()
                 notifyPlayState(false)
@@ -252,7 +259,7 @@ class MusicPlayerManager(private val context: Context) {
         }
         lastPlayStartTime = System.currentTimeMillis()
         val effectiveUsage = getMusicEffectiveUsage()
-        val vol = appConfig.musicVolume.coerceIn(0f, 1f)
+        val vol = (volume ?: appConfig.musicVolume).coerceIn(0f, 1f)
         val outDeviceId = if (isMusicExternal()) appConfig.outputDeviceId else 0
         sp.play(track.path, effectiveUsage, vol, outDeviceId)
         isPlaying = true
@@ -260,7 +267,7 @@ class MusicPlayerManager(private val context: Context) {
         startPlaybackService(track.name)
         notifyTrackChanged(track, currentIndex)
         notifyPlayState(true)
-        AppLog.i(TAG, "Fallback: software decode for ${track.name}")
+        AppLog.i(TAG, "Fallback: software decode for ${track.name} (vol=$vol, customVolume=${volume != null})")
     }
 
     private fun handleTrackCompletion() {
@@ -335,6 +342,10 @@ class MusicPlayerManager(private val context: Context) {
     }
 
     fun setVolume(volume: Float) {
+        if (isOneShotPlayback && currentCustomVolume != null) {
+            // Current one-shot playback uses an independent volume; do not override with main slider
+            return
+        }
         val vol = volume.coerceIn(0f, 1f)
         try {
             if (usingSoftPlayer) softPlayer?.setVolume(vol)
@@ -371,6 +382,7 @@ class MusicPlayerManager(private val context: Context) {
         }
         mediaPlayer = null
         usingSoftPlayer = false
+        currentCustomVolume = null
     }
 
     fun stop() {
@@ -382,6 +394,7 @@ class MusicPlayerManager(private val context: Context) {
             isPlaying = false
         }
         currentTrack = null
+        currentCustomVolume = null
         isOneShotPlayback = false
         stopPlaybackService()
         notifyPlayState(false)

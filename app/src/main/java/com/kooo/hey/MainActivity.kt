@@ -45,8 +45,10 @@ import android.provider.Settings
 import android.view.KeyEvent
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.SeekBar
 import android.widget.TextView
 import com.kooo.hey.audio.MusicPlaybackController
 import com.kooo.hey.audio.MusicPlayerManager
@@ -1119,7 +1121,12 @@ class MainActivity : AppCompatActivity() {
             musicManager.stop()
         } else {
             val name = config.getQuickSoundName(index)
-            musicManager.playPath(path, name)
+            val volume = if (config.getQuickSoundCustomVolumeEnabled(index)) {
+                config.getQuickSoundVolume(index)
+            } else {
+                null
+            }
+            musicManager.playPath(path, name, isOneShot = true, volume = volume)
         }
     }
 
@@ -1144,6 +1151,11 @@ class MainActivity : AppCompatActivity() {
         val editName = dialogView.findViewById<EditText>(R.id.editSoundName)
         val textFile = dialogView.findViewById<TextView>(R.id.selectedFileText)
         val btnSelect = dialogView.findViewById<TextView>(R.id.btnSelectFile)
+        val radioVolFollowMain = dialogView.findViewById<RadioButton>(R.id.radioVolFollowMain)
+        val radioVolCustom = dialogView.findViewById<RadioButton>(R.id.radioVolCustom)
+        val layoutCustomVolume = dialogView.findViewById<LinearLayout>(R.id.layoutCustomVolume)
+        val seekCustomVolume = dialogView.findViewById<SeekBar>(R.id.seekCustomVolume)
+        val textCustomVolumeValue = dialogView.findViewById<TextView>(R.id.textCustomVolumeValue)
         val btnClear = dialogView.findViewById<TextView>(R.id.btnClear)
         val btnDelete = dialogView.findViewById<TextView>(R.id.btnDelete)
         val btnCancel = dialogView.findViewById<TextView>(R.id.btnCancel)
@@ -1155,6 +1167,45 @@ class MainActivity : AppCompatActivity() {
         editName.setSelection(currentName.length)
 
         var selectedPath = config.getQuickSoundPath(index)
+
+        val mainVolPercent = (config.musicVolume * 100).toInt().coerceIn(0, 100)
+        radioVolFollowMain.text = getString(R.string.quick_sound_vol_follow_main, mainVolPercent)
+
+        var isCustomVolume = config.getQuickSoundCustomVolumeEnabled(index)
+        var customVolumeValue = (config.getQuickSoundVolume(index) * 100).toInt().coerceIn(0, 100)
+
+        seekCustomVolume.progress = customVolumeValue
+        textCustomVolumeValue.text = "$customVolumeValue%"
+
+        fun updateVolumeModeUi() {
+            if (isCustomVolume) {
+                radioVolCustom.isChecked = true
+                layoutCustomVolume.visibility = View.VISIBLE
+            } else {
+                radioVolFollowMain.isChecked = true
+                layoutCustomVolume.visibility = View.GONE
+            }
+        }
+        updateVolumeModeUi()
+
+        radioVolFollowMain.setOnClickListener {
+            isCustomVolume = false
+            updateVolumeModeUi()
+        }
+
+        radioVolCustom.setOnClickListener {
+            isCustomVolume = true
+            updateVolumeModeUi()
+        }
+
+        seekCustomVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                customVolumeValue = progress
+                textCustomVolumeValue.text = "$progress%"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
         fun updateFileDisplay() {
             if (selectedPath.isNotEmpty()) {
@@ -1213,6 +1264,8 @@ class MainActivity : AppCompatActivity() {
             val finalName = if (enteredName.isNotEmpty()) enteredName else config.getQuickSoundName(index)
             config.setQuickSoundName(index, finalName)
             config.setQuickSoundPath(index, selectedPath)
+            config.setQuickSoundCustomVolumeEnabled(index, isCustomVolume)
+            config.setQuickSoundVolume(index, customVolumeValue / 100f)
             updateQuickButtonsUi()
             dialog.dismiss()
         }

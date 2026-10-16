@@ -24,7 +24,7 @@
     <dimen name="speaker_dest_margin_top">28dp</dimen>
 
     <dimen name="gain_slider_width">56dp</dimen>
-    <dimen name="gain_slider_height">300dp</dimen>
+    <dimen name="gain_slider_height">440dp</dimen>
     <dimen name="gain_slider_margin_start">24dp</dimen>
 
     <dimen name="corner_button_size">34dp</dimen>
